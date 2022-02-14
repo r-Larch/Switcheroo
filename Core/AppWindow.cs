@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Switcheroo - The incremental-search task switcher for Windows.
  * http://www.switcheroo.io/
  * Copyright 2009, 2010 James Sulak
@@ -126,7 +126,7 @@ namespace Switcheroo.Core
             // if (IsToolWindow()) return false;
             if (IsToolWindow()) return true;
             if (IsNoActivate()) return false;
-            if (!IsOwnerOrOwnerNotVisible()) return false;
+            //if (!IsOwnerOrOwnerNotVisible()) return false;
             if (HasITaskListDeletedProperty()) return false;
             if (IsCoreWindow()) return false;
             if (IsApplicationFrameWindow() && !HasAppropriateApplicationViewCloakType()) return false;
