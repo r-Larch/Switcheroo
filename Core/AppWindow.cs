@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Switcheroo - The incremental-search task switcher for Windows.
  * http://www.switcheroo.io/
  * Copyright 2009, 2010 James Sulak
@@ -179,7 +179,7 @@ namespace Switcheroo.Core
 
         private bool IsOwnerOrOwnerNotVisible()
         {
-            return Owner == null || !Owner.Visible;
+            return Owner == null || !(Owner.Visible && Owner.Enabled);
         }
 
         private bool HasITaskListDeletedProperty()
