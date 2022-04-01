@@ -1,5 +1,4 @@
-﻿using System;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 
 namespace Switcheroo.Core.Matchers {
@@ -43,8 +42,8 @@ namespace Switcheroo.Core.Matchers {
         {
             var regexPattern = "";
             foreach (var p in pattern) {
-                var lowerP = Char.ToLowerInvariant(p);
-                var upperP = Char.ToUpperInvariant(p);
+                var lowerP = char.ToLowerInvariant(p);
+                var upperP = char.ToUpperInvariant(p);
                 regexPattern += string.Format(@"([^\p{{Lu}}\s]*?\s?)(\b{0}|{1})", Regex.Escape(lowerP + ""),
                     Regex.Escape(upperP + ""));
             }

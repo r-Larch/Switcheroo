@@ -18,33 +18,32 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-using System;
 using System.Collections.Generic;
 
 
 namespace ManagedWinapi.Windows.Contents {
     /// <summary>
-    /// An abstract representation of the content of a window or control.
+    ///     An abstract representation of the content of a window or control.
     /// </summary>
     public interface WindowContent {
         /// <summary>
-        /// A short description of the type of this window.
+        ///     A short description of the type of this window.
         /// </summary>
         string ComponentType { get; }
 
         /// <summary>
-        /// A short description of this content.
+        ///     A short description of this content.
         /// </summary>
         string ShortDescription { get; }
 
         /// <summary>
-        /// The full description of this content.
+        ///     The full description of this content.
         /// </summary>
         string LongDescription { get; }
 
         /// <summary>
-        /// A list of properties of this content.
+        ///     A list of properties of this content.
         /// </summary>
-        Dictionary<String, String> PropertyList { get; }
+        Dictionary<string, string> PropertyList { get; }
     }
 }

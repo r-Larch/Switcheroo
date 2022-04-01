@@ -18,23 +18,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-using System;
 using System.Collections.Generic;
 
 
 namespace ManagedWinapi.Windows.Contents {
     internal class ContentParserRegistry {
-        static ContentParserRegistry instance = null;
+        private static ContentParserRegistry instance;
 
-        public static ContentParserRegistry Instance {
-            get {
-                if (instance == null)
-                    instance = new ContentParserRegistry();
-                return instance;
-            }
-        }
-
-        List<WindowContentParser> parsers = new List<WindowContentParser>();
+        private readonly List<WindowContentParser> parsers = new();
 
         private ContentParserRegistry()
         {
@@ -47,9 +38,17 @@ namespace ManagedWinapi.Windows.Contents {
             parsers.Add(new TextFieldParser(false));
         }
 
+        public static ContentParserRegistry Instance {
+            get {
+                if (instance == null)
+                    instance = new ContentParserRegistry();
+                return instance;
+            }
+        }
+
         public WindowContentParser GetParser(SystemWindow sw)
         {
-            foreach (WindowContentParser p in parsers) {
+            foreach (var p in parsers) {
                 if (p.CanParseContent(sw))
                     return p;
             }

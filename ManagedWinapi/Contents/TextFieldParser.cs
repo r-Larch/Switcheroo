@@ -18,18 +18,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-using System;
 using System.Collections.Generic;
 
 
 namespace ManagedWinapi.Windows.Contents {
     /// <summary>
-    /// The content of a text box.
+    ///     The content of a text box.
     /// </summary>
     public class TextContent : WindowContent {
-        readonly string text;
-        readonly bool password;
-        readonly bool strict;
+        private readonly bool password;
+        private readonly bool strict;
+        private readonly string text;
 
         internal TextContent(string text, bool password, bool strict)
         {
@@ -39,20 +38,17 @@ namespace ManagedWinapi.Windows.Contents {
         }
 
         ///
-        public string ComponentType {
-            get { return strict ? "TextBox" : "Text"; }
-        }
+        public string ComponentType => strict ? "TextBox" : "Text";
 
         ///
         public string ShortDescription {
             get {
-                string s = strict ? " <TextBox>" : "";
+                var s = strict ? " <TextBox>" : "";
                 if (text.IndexOf("\n") != -1)
                     return "<MultiLine>" + s;
-                else if (password)
+                if (password)
                     return text + " <Password>" + s;
-                else
-                    return text + s;
+                return text + s;
             }
         }
 
@@ -61,15 +57,14 @@ namespace ManagedWinapi.Windows.Contents {
             get {
                 if (password)
                     return text + " <Password>";
-                else
-                    return text;
+                return text;
             }
         }
 
         ///
         public Dictionary<string, string> PropertyList {
             get {
-                Dictionary<string, string> result = new Dictionary<string, string>();
+                var result = new Dictionary<string, string>();
                 result.Add("Password", password ? "True" : "False");
                 result.Add("MultiLine", text.IndexOf('\n') != -1 ? "True" : "False");
                 result.Add("Text", text);
@@ -78,8 +73,8 @@ namespace ManagedWinapi.Windows.Contents {
         }
     }
 
-    class TextFieldParser : WindowContentParser {
-        readonly bool strict;
+    internal class TextFieldParser : WindowContentParser {
+        private readonly bool strict;
 
         public TextFieldParser(bool strict)
         {
@@ -92,9 +87,8 @@ namespace ManagedWinapi.Windows.Contents {
                 uint EM_GETLINECOUNT = 0xBA;
                 return sw.SendGetMessage(EM_GETLINECOUNT) != 0;
             }
-            else {
-                return sw.Title != "";
-            }
+
+            return sw.Title != "";
         }
 
         internal override WindowContent ParseContent(SystemWindow sw)

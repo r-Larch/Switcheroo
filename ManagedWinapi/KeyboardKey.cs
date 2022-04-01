@@ -1,19 +1,19 @@
 using System;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
-using System.Runtime.InteropServices;
 
 
 namespace ManagedWinapi {
     /// <summary>
-    /// This class contains utility methods related to keys on the keyboard.
+    ///     This class contains utility methods related to keys on the keyboard.
     /// </summary>
     public class KeyboardKey {
-        readonly Keys key;
-        readonly bool extended;
+        private readonly bool extended;
+        private readonly Keys key;
 
         /// <summary>
-        /// Initializes a new instance of this class for a given key.
+        ///     Initializes a new instance of this class for a given key.
         /// </summary>
         /// <param name="key"></param>
         public KeyboardKey(Keys key)
@@ -30,61 +30,32 @@ namespace ManagedWinapi {
                 case Keys.Down:
                 case Keys.Left:
                 case Keys.Right:
-                    this.extended = true;
+                    extended = true;
                     break;
                 default:
-                    this.extended = false;
+                    extended = false;
                     break;
             }
         }
 
         /// <summary>
-        /// The state of this key, as seen by this application.
+        ///     The state of this key, as seen by this application.
         /// </summary>
-        public short State {
-            get { return GetKeyState((short) key); }
-        }
+        public short State => GetKeyState((short) key);
 
         /// <summary>
-        /// The global state of this key.
+        ///     The global state of this key.
         /// </summary>
-        public short AsyncState {
-            get { return GetAsyncKeyState((short) key); }
-        }
+        public short AsyncState => GetAsyncKeyState((short) key);
 
         /// <summary>
-        /// Press this key and release it.
-        /// </summary>
-        public void PressAndRelease()
-        {
-            Press();
-            Release();
-        }
-
-        /// <summary>
-        /// Press this key.
-        /// </summary>
-        public void Press()
-        {
-            keybd_event((byte) key, (byte) MapVirtualKey((int) key, 0), extended ? (uint) 0x1 : 0x0, UIntPtr.Zero);
-        }
-
-        /// <summary>
-        /// Release this key.
-        /// </summary>
-        public void Release()
-        {
-            keybd_event((byte) key, (byte) MapVirtualKey((int) key, 0), extended ? (uint) 0x3 : 0x2, UIntPtr.Zero);
-        }
-
-        /// <summary>
-        /// Determine the name of a key in the current keyboard layout.
+        ///     Determine the name of a key in the current keyboard layout.
         /// </summary>
         /// <returns>The key's name</returns>
         public string KeyName {
             get {
-                StringBuilder sb = new StringBuilder(512);
-                int scancode = MapVirtualKey((int) key, 0);
+                var sb = new StringBuilder(512);
+                var scancode = MapVirtualKey((int) key, 0);
                 if (extended)
                     scancode += 0x100;
                 GetKeyNameText(scancode << 16, sb, sb.Capacity);
@@ -117,8 +88,33 @@ namespace ManagedWinapi {
         }
 
         /// <summary>
-        /// Inject a keyboard event into the event loop, as if the user performed
-        /// it with his keyboard.
+        ///     Press this key and release it.
+        /// </summary>
+        public void PressAndRelease()
+        {
+            Press();
+            Release();
+        }
+
+        /// <summary>
+        ///     Press this key.
+        /// </summary>
+        public void Press()
+        {
+            keybd_event((byte) key, (byte) MapVirtualKey((int) key, 0), extended ? (uint) 0x1 : 0x0, UIntPtr.Zero);
+        }
+
+        /// <summary>
+        ///     Release this key.
+        /// </summary>
+        public void Release()
+        {
+            keybd_event((byte) key, (byte) MapVirtualKey((int) key, 0), extended ? (uint) 0x3 : 0x2, UIntPtr.Zero);
+        }
+
+        /// <summary>
+        ///     Inject a keyboard event into the event loop, as if the user performed
+        ///     it with his keyboard.
         /// </summary>
         public static void InjectKeyboardEvent(Keys key, byte scanCode, uint flags, UIntPtr extraInfo)
         {
@@ -126,8 +122,8 @@ namespace ManagedWinapi {
         }
 
         /// <summary>
-        /// Inject a mouse event into the event loop, as if the user performed
-        /// it with his mouse.
+        ///     Inject a mouse event into the event loop, as if the user performed
+        ///     it with his mouse.
         /// </summary>
         public static void InjectMouseEvent(uint flags, uint dx, uint dy, uint data, UIntPtr extraInfo)
         {
@@ -144,18 +140,18 @@ namespace ManagedWinapi {
             UIntPtr dwExtraInfo);
 
         [DllImport("user32.dll")]
-        static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint dwData,
+        private static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint dwData,
             UIntPtr dwExtraInfo);
 
         [DllImport("user32.dll")]
-        static extern int GetKeyNameText(int lParam, [Out] StringBuilder lpString,
+        private static extern int GetKeyNameText(int lParam, [Out] StringBuilder lpString,
             int nSize);
 
         [DllImport("user32.dll")]
-        static extern int MapVirtualKey(int uCode, int uMapType);
+        private static extern int MapVirtualKey(int uCode, int uMapType);
 
         [DllImport("user32.dll")]
-        static extern short GetAsyncKeyState(int vKey);
+        private static extern short GetAsyncKeyState(int vKey);
 
         #endregion
     }

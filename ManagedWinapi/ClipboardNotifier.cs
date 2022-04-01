@@ -20,33 +20,26 @@
 
 using System;
 using System.ComponentModel;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
-using ManagedWinapi.Windows;
 using System.Runtime.InteropServices;
-using Microsoft.Win32;
+using System.Windows.Forms;
+using ManagedWinapi.Windows;
 
 
 namespace ManagedWinapi {
     /// <summary>
-    /// Specifies a component that monitors the system clipboard for changes.
+    ///     Specifies a component that monitors the system clipboard for changes.
     /// </summary>
     [DefaultEvent("ClipboardChanged")]
     public class ClipboardNotifier : Component {
-        /// <summary>
-        /// Occurs when the clipboard contents have changed.
-        /// </summary>
-        public event EventHandler ClipboardChanged;
+        private static bool instantiated;
+        private readonly EventDispatchingNativeWindow ednw;
 
         private readonly IntPtr hWnd;
         private IntPtr nextHWnd;
-        private readonly EventDispatchingNativeWindow ednw;
-
-        private static Boolean instantiated = false;
 
         /// <summary>
-        /// Creates a new clipboard notifier.
+        ///     Creates a new clipboard notifier.
         /// </summary>
         /// <param name="container">The container.</param>
         public ClipboardNotifier(IContainer container)
@@ -56,13 +49,13 @@ namespace ManagedWinapi {
         }
 
         /// <summary>
-        /// Creates a new clipboard notifier.
+        ///     Creates a new clipboard notifier.
         /// </summary>
         public ClipboardNotifier()
         {
             if (instantiated) {
                 // use new windows if more than one instance is used.
-                System.Diagnostics.Debug.WriteLine("WARNING: More than one ClipboardNotifier used!");
+                Debug.WriteLine("WARNING: More than one ClipboardNotifier used!");
                 ednw = new EventDispatchingNativeWindow();
             }
             else {
@@ -76,7 +69,12 @@ namespace ManagedWinapi {
         }
 
         /// <summary>
-        /// Frees resources.
+        ///     Occurs when the clipboard contents have changed.
+        /// </summary>
+        public event EventHandler ClipboardChanged;
+
+        /// <summary>
+        ///     Frees resources.
         /// </summary>
         protected override void Dispose(bool disposing)
         {
@@ -85,7 +83,7 @@ namespace ManagedWinapi {
             base.Dispose(disposing);
         }
 
-        void clipboardEventHandler(ref System.Windows.Forms.Message m, ref bool handled)
+        private void clipboardEventHandler(ref Message m, ref bool handled)
         {
             if (handled) return;
             if (m.Msg == WM_DRAWCLIPBOARD) {

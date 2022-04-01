@@ -18,13 +18,13 @@
  * along with Switcheroo.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using Microsoft.Win32;
-using Switcheroo.Core;
 using System;
 using System.Globalization;
 using System.Runtime.Caching;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
+using Microsoft.Win32;
+using Switcheroo.Core;
 
 
 namespace Switcheroo {
@@ -54,6 +54,11 @@ namespace Switcheroo {
             return iconImage;
         }
 
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+
         private static bool ShouldUseSmallTaskbarIcons()
         {
             var cacheKey = "SmallTaskbarIcons";
@@ -81,11 +86,6 @@ namespace Switcheroo {
                 MemoryCache.Default.Set(cacheKey, smallTaskbarIcons, DateTimeOffset.Now.AddMinutes(120));
                 return smallTaskbarIcons;
             }
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
         }
     }
 }

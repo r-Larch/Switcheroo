@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Drawing;
 using System.Runtime.InteropServices;
 
@@ -8,77 +6,78 @@ using System.Runtime.InteropServices;
 // from www.pinvoke.net
 namespace ManagedWinapi.Windows {
     /// <summary>
-    /// Wrapper around the Winapi POINT type.
+    ///     Wrapper around the Winapi POINT type.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     public struct POINT {
         /// <summary>
-        /// The X Coordinate.
+        ///     The X Coordinate.
         /// </summary>
         public int X;
 
         /// <summary>
-        /// The Y Coordinate.
+        ///     The Y Coordinate.
         /// </summary>
         public int Y;
 
         /// <summary>
-        /// Creates a new POINT.
+        ///     Creates a new POINT.
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
         public POINT(int x, int y)
         {
-            this.X = x;
-            this.Y = y;
+            X = x;
+            Y = y;
         }
 
         /// <summary>
-        /// Implicit cast.
+        ///     Implicit cast.
         /// </summary>
         /// <returns></returns>
-        public static implicit operator System.Drawing.Point(POINT p)
+        public static implicit operator Point(POINT p)
         {
-            return new System.Drawing.Point(p.X, p.Y);
+            return new Point(p.X, p.Y);
         }
 
         /// <summary>
-        /// Implicit cast.
+        ///     Implicit cast.
         /// </summary>
         /// <returns></returns>
-        public static implicit operator POINT(System.Drawing.Point p)
+        public static implicit operator POINT(Point p)
         {
             return new POINT(p.X, p.Y);
         }
     }
 
     /// <summary>
-    /// Wrapper around the Winapi RECT type.
+    ///     Wrapper around the Winapi RECT type.
     /// </summary>
-    [Serializable, StructLayout(LayoutKind.Sequential)]
+    [Serializable]
+    [StructLayout(LayoutKind.Sequential)]
     public struct RECT {
         /// <summary>
-        /// LEFT
+        ///     LEFT
         /// </summary>
         public int Left;
 
         /// <summary>
-        /// TOP
+        ///     TOP
         /// </summary>
         public int Top;
 
         /// <summary>
-        /// RIGHT
+        ///     RIGHT
         /// </summary>
         public int Right;
 
         /// <summary>
-        /// BOTTOM
+        ///     BOTTOM
         /// </summary>
         public int Bottom;
 
         /// <summary>
-        /// Creates a new RECT.
+        ///     Creates a new RECT.
         /// </summary>
         public RECT(int left_, int top_, int right_, int bottom_)
         {
@@ -89,36 +88,28 @@ namespace ManagedWinapi.Windows {
         }
 
         /// <summary>
-        /// HEIGHT
+        ///     HEIGHT
         /// </summary>
-        public int Height {
-            get { return Bottom - Top; }
-        }
+        public int Height => Bottom - Top;
 
         /// <summary>
-        /// WIDTH
+        ///     WIDTH
         /// </summary>
-        public int Width {
-            get { return Right - Left; }
-        }
+        public int Width => Right - Left;
 
         /// <summary>
-        /// SIZE
+        ///     SIZE
         /// </summary>
-        public Size Size {
-            get { return new Size(Width, Height); }
-        }
+        public Size Size => new Size(Width, Height);
 
         /// <summary>
-        /// LOCATION
+        ///     LOCATION
         /// </summary>
-        public Point Location {
-            get { return new Point(Left, Top); }
-        }
+        public Point Location => new Point(Left, Top);
 
         // Handy method for converting to a System.Drawing.Rectangle
         /// <summary>
-        /// Convert RECT to a Rectangle.
+        ///     Convert RECT to a Rectangle.
         /// </summary>
         public Rectangle ToRectangle()
         {
@@ -126,7 +117,7 @@ namespace ManagedWinapi.Windows {
         }
 
         /// <summary>
-        /// Convert Rectangle to a RECT
+        ///     Convert Rectangle to a RECT
         /// </summary>
         public static RECT FromRectangle(Rectangle rectangle)
         {
@@ -134,7 +125,7 @@ namespace ManagedWinapi.Windows {
         }
 
         /// <summary>
-        /// Returns the hash code for this instance.
+        ///     Returns the hash code for this instance.
         /// </summary>
         public override int GetHashCode()
         {
@@ -146,7 +137,7 @@ namespace ManagedWinapi.Windows {
         #region Operator overloads
 
         /// <summary>
-        /// Implicit Cast.
+        ///     Implicit Cast.
         /// </summary>
         public static implicit operator Rectangle(RECT rect)
         {
@@ -154,7 +145,7 @@ namespace ManagedWinapi.Windows {
         }
 
         /// <summary>
-        /// Implicit Cast.
+        ///     Implicit Cast.
         /// </summary>
         public static implicit operator RECT(Rectangle rect)
         {

@@ -18,11 +18,10 @@
  * along with Switcheroo.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using Serilog;
-using ManagedWinapi;
-using ManagedWinapi.Hooks;
 using System;
 using System.Windows.Forms;
+using ManagedWinapi;
+using ManagedWinapi.Hooks;
 
 
 namespace Switcheroo {
@@ -35,17 +34,16 @@ namespace Switcheroo {
     }
 
     public class AltTabHook : IDisposable {
-        public event AltTabHookEventHandler Pressed;
         private const int AltKey = 32;
         private const int CtrlKey = 11;
-        private readonly KeyboardKey _shiftKey = new KeyboardKey(Keys.LShiftKey);
-        private readonly KeyboardKey _ctrlKey = new KeyboardKey(Keys.LControlKey);
-        private readonly KeyboardKey _altKey = new KeyboardKey(Keys.LMenu);
-        private readonly int WM_KEYDOWN = 0x0100;
-        private readonly int WM_SYSKEYDOWN = 0x0104;
+        private readonly KeyboardKey _altKey = new(Keys.LMenu);
+        private readonly KeyboardKey _ctrlKey = new(Keys.LControlKey);
 
         // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
         private readonly LowLevelKeyboardHook _lowLevelKeyboardHook;
+        private readonly KeyboardKey _shiftKey = new(Keys.LShiftKey);
+        private readonly int WM_KEYDOWN = 0x0100;
+        private readonly int WM_SYSKEYDOWN = 0x0104;
 
         public AltTabHook()
         {
@@ -53,6 +51,15 @@ namespace Switcheroo {
             _lowLevelKeyboardHook.MessageIntercepted += OnMessageIntercepted;
             _lowLevelKeyboardHook.StartHook();
         }
+
+        public void Dispose()
+        {
+            if (_lowLevelKeyboardHook != null) {
+                _lowLevelKeyboardHook.Dispose();
+            }
+        }
+
+        public event AltTabHookEventHandler Pressed;
 
         private void OnMessageIntercepted(LowLevelMessage lowLevelMessage, ref bool handled)
         {
@@ -99,13 +106,6 @@ namespace Switcheroo {
             }
 
             return altTabHookEventArgs;
-        }
-
-        public void Dispose()
-        {
-            if (_lowLevelKeyboardHook != null) {
-                _lowLevelKeyboardHook.Dispose();
-            }
         }
     }
 }

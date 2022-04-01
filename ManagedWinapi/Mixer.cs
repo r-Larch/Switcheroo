@@ -22,56 +22,30 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 using ManagedWinapi.Windows;
 
 
 namespace ManagedWinapi.Audio.Mixer {
     /// <summary>
-    /// Represents a mixer provided by a sound card. Each mixer has
-    /// multiple destination lines (e. g. Record and Playback) of which
-    /// each has multiple source lines (Wave, MIDI, Mic, etc.).
+    ///     Represents a mixer provided by a sound card. Each mixer has
+    ///     multiple destination lines (e. g. Record and Playback) of which
+    ///     each has multiple source lines (Wave, MIDI, Mic, etc.).
     /// </summary>
     public class Mixer : IDisposable {
         /// <summary>
-        /// Gets the number of available mixers in this system.
-        /// </summary>
-        public static uint MixerCount {
-            get { return mixerGetNumDevs(); }
-        }
-
-        /// <summary>
-        /// Opens a mixer.
-        /// </summary>
-        /// <param name="index">The zero-based index of this mixer.</param>
-        /// <returns>A reference to this mixer.</returns>
-        public static Mixer OpenMixer(uint index)
-        {
-            if (index < 0 || index > MixerCount)
-                throw new ArgumentException();
-            IntPtr hMixer = IntPtr.Zero;
-            EventDispatchingNativeWindow ednw = EventDispatchingNativeWindow.Instance;
-            int error = mixerOpen(ref hMixer, index, ednw.Handle, IntPtr.Zero, CALLBACK_WINDOW);
-            if (error != 0) {
-                throw new Win32Exception("Could not load mixer: " + error);
-            }
-
-            return new Mixer(hMixer);
-        }
-
-        private IntPtr hMixer;
-        private MIXERCAPS mc;
-        private IList<DestinationLine> destLines = null;
-        private bool createEvents;
-
-        /// <summary>
-        /// Occurs when a control of this mixer changes value.
+        ///     Occurs when a control of this mixer changes value.
         /// </summary>
         public MixerEventHandler ControlChanged;
+        private IList<DestinationLine> destLines;
+
+        private IntPtr hMixer;
 
         /// <summary>
-        /// Occurs when a line of this mixer changes.
+        ///     Occurs when a line of this mixer changes.
         /// </summary>
         public MixerEventHandler LineChanged;
+        private readonly MIXERCAPS mc;
 
         private Mixer(IntPtr hMixer)
         {
@@ -80,70 +54,39 @@ namespace ManagedWinapi.Audio.Mixer {
             mixerGetDevCapsA(hMixer, ref mc, Marshal.SizeOf(mc));
         }
 
-        private void ednw_EventHandler(ref System.Windows.Forms.Message m, ref bool handled)
-        {
-            if (!createEvents) return;
-            if (m.Msg == MM_MIXM_CONTROL_CHANGE && m.WParam == hMixer) {
-                int ctrlID = m.LParam.ToInt32();
-                MixerControl c = FindControl(ctrlID);
-                if (c != null) {
-                    if (ControlChanged != null) {
-                        ControlChanged(this, new MixerEventArgs(this, c.Line, c));
-                    }
-
-                    c.OnChanged();
-                }
-            }
-            else if (m.Msg == MM_MIXM_LINE_CHANGE && m.WParam == hMixer) {
-                int lineID = m.LParam.ToInt32();
-                MixerLine l = FindLine(lineID);
-                if (l != null) {
-                    if (ControlChanged != null) {
-                        LineChanged(this, new MixerEventArgs(this, l, null));
-                    }
-
-                    l.OnChanged();
-                }
-            }
-        }
-
         /// <summary>
-        /// Whether to create change events.
-        /// Enabling this may create a slight performance impact, so only
-        /// enable it if you handle these events.
+        ///     Gets the number of available mixers in this system.
         /// </summary>
-        public bool CreateEvents {
-            get { return createEvents; }
-            set { createEvents = value; }
-        }
-
-        internal IntPtr Handle {
-            get { return hMixer; }
-        }
+        public static uint MixerCount => mixerGetNumDevs();
 
         /// <summary>
-        /// Gets the name of this mixer's sound card.
+        ///     Whether to create change events.
+        ///     Enabling this may create a slight performance impact, so only
+        ///     enable it if you handle these events.
         /// </summary>
-        public string Name {
-            get { return mc.szPname; }
-        }
+        public bool CreateEvents { get; set; }
+
+        internal IntPtr Handle => hMixer;
 
         /// <summary>
-        /// Gets the number of destination lines of this mixer.
+        ///     Gets the name of this mixer's sound card.
         /// </summary>
-        public int DestinationLineCount {
-            get { return mc.cDestinations; }
-        }
+        public string Name => mc.szPname;
 
         /// <summary>
-        /// Gets all destination lines of this mixer
+        ///     Gets the number of destination lines of this mixer.
+        /// </summary>
+        public int DestinationLineCount => mc.cDestinations;
+
+        /// <summary>
+        ///     Gets all destination lines of this mixer
         /// </summary>
         public IList<DestinationLine> DestinationLines {
             get {
                 if (destLines == null) {
-                    int dlc = DestinationLineCount;
-                    List<DestinationLine> l = new List<DestinationLine>(dlc);
-                    for (int i = 0; i < dlc; i++) {
+                    var dlc = DestinationLineCount;
+                    var l = new List<DestinationLine>(dlc);
+                    for (var i = 0; i < dlc; i++) {
                         l.Add(DestinationLine.GetLine(this, i));
                     }
 
@@ -155,12 +98,12 @@ namespace ManagedWinapi.Audio.Mixer {
         }
 
         /// <summary>
-        /// Disposes this mixer.
+        ///     Disposes this mixer.
         /// </summary>
         public void Dispose()
         {
             if (destLines != null) {
-                foreach (DestinationLine dl in destLines) {
+                foreach (var dl in destLines) {
                     dl.Dispose();
                 }
 
@@ -175,14 +118,60 @@ namespace ManagedWinapi.Audio.Mixer {
         }
 
         /// <summary>
-        /// Find a line of this mixer by ID.
+        ///     Opens a mixer.
+        /// </summary>
+        /// <param name="index">The zero-based index of this mixer.</param>
+        /// <returns>A reference to this mixer.</returns>
+        public static Mixer OpenMixer(uint index)
+        {
+            if (index < 0 || index > MixerCount)
+                throw new ArgumentException();
+            var hMixer = IntPtr.Zero;
+            var ednw = EventDispatchingNativeWindow.Instance;
+            var error = mixerOpen(ref hMixer, index, ednw.Handle, IntPtr.Zero, CALLBACK_WINDOW);
+            if (error != 0) {
+                throw new Win32Exception("Could not load mixer: " + error);
+            }
+
+            return new Mixer(hMixer);
+        }
+
+        private void ednw_EventHandler(ref Message m, ref bool handled)
+        {
+            if (!CreateEvents) return;
+            if (m.Msg == MM_MIXM_CONTROL_CHANGE && m.WParam == hMixer) {
+                var ctrlID = m.LParam.ToInt32();
+                var c = FindControl(ctrlID);
+                if (c != null) {
+                    if (ControlChanged != null) {
+                        ControlChanged(this, new MixerEventArgs(this, c.Line, c));
+                    }
+
+                    c.OnChanged();
+                }
+            }
+            else if (m.Msg == MM_MIXM_LINE_CHANGE && m.WParam == hMixer) {
+                var lineID = m.LParam.ToInt32();
+                var l = FindLine(lineID);
+                if (l != null) {
+                    if (ControlChanged != null) {
+                        LineChanged(this, new MixerEventArgs(this, l, null));
+                    }
+
+                    l.OnChanged();
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Find a line of this mixer by ID.
         /// </summary>
         /// <param name="lineId">ID of the line to find</param>
         /// <returns>The line, or <code>null</code> if no line was found.</returns>
         public MixerLine FindLine(int lineId)
         {
-            foreach (DestinationLine dl in DestinationLines) {
-                MixerLine found = dl.findLine(lineId);
+            foreach (var dl in DestinationLines) {
+                var found = dl.findLine(lineId);
                 if (found != null)
                     return found;
             }
@@ -191,14 +180,14 @@ namespace ManagedWinapi.Audio.Mixer {
         }
 
         /// <summary>
-        /// Find a control of this mixer by ID.
+        ///     Find a control of this mixer by ID.
         /// </summary>
         /// <param name="ctrlId">ID of the control to find.</param>
         /// <returns>The control, or <code>null</code> if no control was found.</returns>
         public MixerControl FindControl(int ctrlId)
         {
-            foreach (DestinationLine dl in DestinationLines) {
-                MixerControl found = dl.findControl(ctrlId);
+            foreach (var dl in DestinationLines) {
+                var found = dl.findControl(ctrlId);
                 if (found != null) return found;
             }
 
@@ -211,11 +200,11 @@ namespace ManagedWinapi.Audio.Mixer {
         private static extern uint mixerGetNumDevs();
 
         [DllImport("winmm.dll")]
-        private static extern Int32 mixerOpen(ref IntPtr phmx, uint pMxId,
-            IntPtr dwCallback, IntPtr dwInstance, UInt32 fdwOpen);
+        private static extern int mixerOpen(ref IntPtr phmx, uint pMxId,
+            IntPtr dwCallback, IntPtr dwInstance, uint fdwOpen);
 
         [DllImport("winmm.dll")]
-        private static extern Int32 mixerClose(IntPtr hmx);
+        private static extern int mixerClose(IntPtr hmx);
 
         [DllImport("winmm.dll", CharSet = CharSet.Ansi)]
         private static extern int mixerGetDevCapsA(IntPtr uMxId, ref MIXERCAPS
@@ -238,57 +227,51 @@ namespace ManagedWinapi.Audio.Mixer {
     }
 
     /// <summary>
-    /// Represents the method that will handle the <b>LineChanged</b> or 
-    /// <b>ControlChanged</b> event of a <see cref="Mixer">Mixer</see>.
+    ///     Represents the method that will handle the <b>LineChanged</b> or
+    ///     <b>ControlChanged</b> event of a <see cref="Mixer">Mixer</see>.
     /// </summary>
     /// <param name="sender">The source of the event.</param>
-    /// <param name="e">A <see cref="MixerEventArgs">MixerEventArgs</see> 
-    /// that contains the event data.</param>
+    /// <param name="e">
+    ///     A <see cref="MixerEventArgs">MixerEventArgs</see>
+    ///     that contains the event data.
+    /// </param>
     public delegate void MixerEventHandler(object sender, MixerEventArgs e);
 
     /// <summary>
-    /// Provides data for the LineChanged and ControlChanged events of a 
-    /// <see cref="Mixer">Mixer</see>.
+    ///     Provides data for the LineChanged and ControlChanged events of a
+    ///     <see cref="Mixer">Mixer</see>.
     /// </summary>
     public class MixerEventArgs : EventArgs {
-        private Mixer mixer;
-        private MixerLine line;
-        private MixerControl control;
-
         /// <summary>
-        /// Initializes a new instance of the 
-        /// <see cref="MixerEventArgs">MixerEventArgs</see> class.
+        ///     Initializes a new instance of the
+        ///     <see cref="MixerEventArgs">MixerEventArgs</see> class.
         /// </summary>
         /// <param name="mixer">The affected mixer</param>
         /// <param name="line">The affected line</param>
-        /// <param name="control">The affected control, or <code>null</code>
-        /// if this is a LineChanged event.</param>
+        /// <param name="control">
+        ///     The affected control, or <code>null</code>
+        ///     if this is a LineChanged event.
+        /// </param>
         public MixerEventArgs(Mixer mixer, MixerLine line, MixerControl control)
         {
-            this.mixer = mixer;
-            this.line = line;
-            this.control = control;
+            Mixer = mixer;
+            Line = line;
+            Control = control;
         }
 
         /// <summary>
-        /// The affected mixer.
+        ///     The affected mixer.
         /// </summary>
-        public Mixer Mixer {
-            get { return mixer; }
-        }
+        public Mixer Mixer { get; }
 
         /// <summary>
-        /// The affected line.
+        ///     The affected line.
         /// </summary>
-        public MixerLine Line {
-            get { return line; }
-        }
+        public MixerLine Line { get; }
 
         /// <summary>
-        /// The affected control.
+        ///     The affected control.
         /// </summary>
-        public MixerControl Control {
-            get { return control; }
-        }
+        public MixerControl Control { get; }
     }
 }

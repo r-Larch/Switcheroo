@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -50,20 +50,20 @@ namespace FrigoTab {
 
         public string GetWindowText()
         {
-            StringBuilder text = new StringBuilder(GetWindowTextLength(this) + 1);
+            var text = new StringBuilder(GetWindowTextLength(this) + 1);
             GetWindowText(this, text, text.Capacity);
             return text.ToString();
         }
 
         public Rect GetRect()
         {
-            WindowPlacement placement = GetWindowPlacement();
+            var placement = GetWindowPlacement();
             switch (placement.ShowCmd) {
                 case ShowWindowCommand.ShowNormal:
                 case ShowWindowCommand.ShowMinimized:
                     return placement.NormalPosition;
                 case ShowWindowCommand.ShowMaximized:
-                    GetWindowRect(this, out Rect rect);
+                    GetWindowRect(this, out var rect);
                     return rect;
                 default:
                     throw new ArgumentException();
@@ -72,7 +72,7 @@ namespace FrigoTab {
 
         private WindowPlacement GetWindowPlacement()
         {
-            WindowPlacement placement = new WindowPlacement();
+            var placement = new WindowPlacement();
             placement.Length = Marshal.SizeOf(placement);
             GetWindowPlacement(this, ref placement);
             return placement;

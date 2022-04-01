@@ -19,21 +19,19 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 
 
 namespace ManagedWinapi {
     /// <summary>
-    /// Helper class that contains static methods useful for API programming. This
-    /// class is not exposed to the user.
+    ///     Helper class that contains static methods useful for API programming. This
+    ///     class is not exposed to the user.
     /// </summary>
     internal class ApiHelper {
         /// <summary>
-        /// Throw a <see cref="Win32Exception"/> if the supplied (return) value is zero.
-        /// This exception uses the last Win32 error code as error message.
+        ///     Throw a <see cref="Win32Exception" /> if the supplied (return) value is zero.
+        ///     This exception uses the last Win32 error code as error message.
         /// </summary>
         /// <param name="returnValue">The return value to test.</param>
         internal static int FailIfZero(int returnValue)
@@ -46,8 +44,8 @@ namespace ManagedWinapi {
         }
 
         /// <summary>
-        /// Throw a <see cref="Win32Exception"/> if the supplied (return) value is zero.
-        /// This exception uses the last Win32 error code as error message.
+        ///     Throw a <see cref="Win32Exception" /> if the supplied (return) value is zero.
+        ///     This exception uses the last Win32 error code as error message.
         /// </summary>
         /// <param name="returnValue">The return value to test.</param>
         internal static IntPtr FailIfZero(IntPtr returnValue)

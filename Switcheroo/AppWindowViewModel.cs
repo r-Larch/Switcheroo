@@ -1,7 +1,7 @@
-﻿using Switcheroo.Core;
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Linq.Expressions;
+using Switcheroo.Core;
 
 
 namespace Switcheroo {
@@ -11,30 +11,24 @@ namespace Switcheroo {
             AppWindow = appWindow;
         }
 
-        public AppWindow AppWindow { get; private set; }
+        public AppWindow AppWindow { get; }
 
         #region IWindowText Members
 
-        public string WindowTitle {
-            get { return AppWindow.Title; }
-        }
+        public string WindowTitle => AppWindow.Title;
 
-        public string ProcessTitle {
-            get { return AppWindow.ProcessTitle; }
-        }
+        public string ProcessTitle => AppWindow.ProcessTitle;
 
         #endregion
 
         #region Bindable properties
 
-        public IntPtr HWnd {
-            get { return AppWindow.HWnd; }
-        }
+        public IntPtr HWnd => AppWindow.HWnd;
 
         private string _formattedTitle;
 
         public string FormattedTitle {
-            get { return _formattedTitle; }
+            get => _formattedTitle;
             set {
                 _formattedTitle = value;
                 NotifyOfPropertyChange(() => FormattedTitle);
@@ -44,17 +38,17 @@ namespace Switcheroo {
         private string _formattedProcessTitle;
 
         public string FormattedProcessTitle {
-            get { return _formattedProcessTitle; }
+            get => _formattedProcessTitle;
             set {
                 _formattedProcessTitle = value;
                 NotifyOfPropertyChange(() => FormattedProcessTitle);
             }
         }
 
-        private bool _isBeingClosed = false;
+        private bool _isBeingClosed;
 
         public bool IsBeingClosed {
-            get { return _isBeingClosed; }
+            get => _isBeingClosed;
             set {
                 _isBeingClosed = value;
                 NotifyOfPropertyChange(() => IsBeingClosed);

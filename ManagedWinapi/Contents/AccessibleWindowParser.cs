@@ -18,24 +18,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Runtime.InteropServices;
+using System.Text;
 using ManagedWinapi.Accessibility;
 
 
 namespace ManagedWinapi.Windows.Contents {
     /// <summary>
-    /// The content of an object that supports the Accessibility API 
-    /// (used by screen readers and similar programs).
+    ///     The content of an object that supports the Accessibility API
+    ///     (used by screen readers and similar programs).
     /// </summary>
     public class AccessibleWindowContent : WindowContent {
-        bool parsed = false;
-        readonly string name;
-        string menu, sysmenu, clientarea;
-        readonly bool hasMenu, hasSysMenu, hasClientArea;
-        SystemWindow sw;
+        private readonly bool hasMenu, hasSysMenu, hasClientArea;
+        private readonly string name;
+        private string menu, sysmenu, clientarea;
+        private bool parsed;
+        private readonly SystemWindow sw;
 
         internal AccessibleWindowContent(string name, bool hasMenu, bool hasSysMenu, bool hasClientArea, SystemWindow sw)
         {
@@ -47,31 +46,34 @@ namespace ManagedWinapi.Windows.Contents {
         }
 
         ///
-        public string ComponentType {
-            get { return "AccessibleWindow"; }
-        }
+        public string ComponentType => "AccessibleWindow";
 
         ///
-        public string ShortDescription {
-            get {
-                return name + " <AccessibleWindow:" +
-                       (hasSysMenu ? " SystemMenu" : "") +
-                       (hasMenu ? " Menu" : "") +
-                       (hasClientArea ? " ClientArea" : "") + ">";
-            }
-        }
+        public string ShortDescription =>
+            name + " <AccessibleWindow:" +
+            (hasSysMenu ? " SystemMenu" : "") +
+            (hasMenu ? " Menu" : "") +
+            (hasClientArea ? " ClientArea" : "") + ">";
 
         ///
         public string LongDescription {
             get {
                 ParseIfNeeded();
-                string result = ShortDescription + "\n";
+                var result = ShortDescription + "\n";
                 if (sysmenu != null)
                     result += "System menu:\n" + sysmenu + "\n";
                 if (menu != null)
                     result += "Menu:\n" + menu + "\n";
                 if (clientarea != null)
                     result += "Client area:\n" + clientarea + "\n";
+                return result;
+            }
+        }
+
+        ///
+        public Dictionary<string, string> PropertyList {
+            get {
+                var result = new Dictionary<string, string>();
                 return result;
             }
         }
@@ -87,15 +89,15 @@ namespace ManagedWinapi.Windows.Contents {
 
         private string ParseMenu(SystemWindow sw, AccessibleObjectID accessibleObjectID)
         {
-            SystemAccessibleObject sao = SystemAccessibleObject.FromWindow(sw, accessibleObjectID);
-            StringBuilder menuitems = new StringBuilder();
+            var sao = SystemAccessibleObject.FromWindow(sw, accessibleObjectID);
+            var menuitems = new StringBuilder();
             ParseSubMenu(menuitems, sao, 1);
             return menuitems.ToString();
         }
 
         private void ParseSubMenu(StringBuilder menuitems, SystemAccessibleObject sao, int depth)
         {
-            foreach (SystemAccessibleObject c in sao.Children) {
+            foreach (var c in sao.Children) {
                 if (c.RoleIndex == 11 || c.RoleIndex == 12) {
                     menuitems.Append(ListContent.Repeat('\t', depth) + c.Name + "\n");
                     ParseSubMenu(menuitems, c, depth + 1);
@@ -105,8 +107,8 @@ namespace ManagedWinapi.Windows.Contents {
 
         private string ParseClientArea(SystemWindow sw)
         {
-            SystemAccessibleObject sao = SystemAccessibleObject.FromWindow(sw, AccessibleObjectID.OBJID_CLIENT);
-            StringBuilder sb = new StringBuilder();
+            var sao = SystemAccessibleObject.FromWindow(sw, AccessibleObjectID.OBJID_CLIENT);
+            var sb = new StringBuilder();
             ParseClientAreaElement(sb, sao, 1);
             return sb.ToString();
         }
@@ -114,7 +116,7 @@ namespace ManagedWinapi.Windows.Contents {
         private void ParseClientAreaElement(StringBuilder sb, SystemAccessibleObject sao, int depth)
         {
             sb.Append("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
-            sb.Append(ListContent.Repeat('*', depth) + " " + sao.ToString() + "\n");
+            sb.Append(ListContent.Repeat('*', depth) + " " + sao + "\n");
             try {
                 sb.Append("D: " + sao.Description + "\n");
             }
@@ -127,22 +129,14 @@ namespace ManagedWinapi.Windows.Contents {
             catch (COMException) {
             }
 
-            foreach (SystemAccessibleObject c in sao.Children) {
+            foreach (var c in sao.Children) {
                 if (c.Window == sao.Window)
                     ParseClientAreaElement(sb, c, depth + 1);
             }
         }
-
-        ///
-        public Dictionary<string, string> PropertyList {
-            get {
-                Dictionary<string, string> result = new Dictionary<string, string>();
-                return result;
-            }
-        }
     }
 
-    class AccessibleWindowParser : WindowContentParser {
+    internal class AccessibleWindowParser : WindowContentParser {
         internal override bool CanParseContent(SystemWindow sw)
         {
             return TestMenu(sw, AccessibleObjectID.OBJID_MENU) ||
@@ -152,18 +146,18 @@ namespace ManagedWinapi.Windows.Contents {
 
         internal override WindowContent ParseContent(SystemWindow sw)
         {
-            SystemAccessibleObject sao = SystemAccessibleObject.FromWindow(sw, AccessibleObjectID.OBJID_WINDOW);
-            bool sysmenu = TestMenu(sw, AccessibleObjectID.OBJID_SYSMENU);
-            bool menu = TestMenu(sw, AccessibleObjectID.OBJID_MENU);
-            bool clientarea = TestClientArea(sw);
+            var sao = SystemAccessibleObject.FromWindow(sw, AccessibleObjectID.OBJID_WINDOW);
+            var sysmenu = TestMenu(sw, AccessibleObjectID.OBJID_SYSMENU);
+            var menu = TestMenu(sw, AccessibleObjectID.OBJID_MENU);
+            var clientarea = TestClientArea(sw);
             return new AccessibleWindowContent(sao.Name, menu, sysmenu, clientarea, sw);
         }
 
         private bool TestClientArea(SystemWindow sw)
         {
             try {
-                SystemAccessibleObject sao = SystemAccessibleObject.FromWindow(sw, AccessibleObjectID.OBJID_CLIENT);
-                foreach (SystemAccessibleObject c in sao.Children) {
+                var sao = SystemAccessibleObject.FromWindow(sw, AccessibleObjectID.OBJID_CLIENT);
+                foreach (var c in sao.Children) {
                     if (c.Window == sw) return true;
                 }
             }
@@ -175,7 +169,7 @@ namespace ManagedWinapi.Windows.Contents {
 
         private bool TestMenu(SystemWindow sw, AccessibleObjectID accessibleObjectID)
         {
-            SystemAccessibleObject sao = SystemAccessibleObject.FromWindow(sw, accessibleObjectID);
+            var sao = SystemAccessibleObject.FromWindow(sw, accessibleObjectID);
             return sao.Children.Length > 0;
         }
     }

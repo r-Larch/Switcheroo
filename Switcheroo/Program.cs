@@ -18,14 +18,14 @@
  * along with Switcheroo.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using Serilog;
-using Switcheroo.Properties;
 using System;
 using System.Configuration;
 using System.Diagnostics;
 using System.Reflection;
 using System.Security.Principal;
 using System.Threading;
+using Serilog;
+using Switcheroo.Properties;
 
 
 namespace Switcheroo {
@@ -77,7 +77,7 @@ namespace Switcheroo {
         private static void RunAsAdministratorIfConfigured()
         {
             if (RunAsAdminRequested() && !IsRunAsAdmin()) {
-                ProcessStartInfo proc = new ProcessStartInfo {
+                var proc = new ProcessStartInfo {
                     UseShellExecute = true,
                     WorkingDirectory = Environment.CurrentDirectory,
                     FileName = Assembly.GetEntryAssembly().Location,
@@ -116,8 +116,8 @@ namespace Switcheroo {
 
         private static bool IsRunAsAdmin()
         {
-            WindowsIdentity id = WindowsIdentity.GetCurrent();
-            WindowsPrincipal principal = new WindowsPrincipal(id);
+            var id = WindowsIdentity.GetCurrent();
+            var principal = new WindowsPrincipal(id);
 
             return principal.IsInRole(WindowsBuiltInRole.Administrator);
         }

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Drawing;
+﻿using System.Drawing;
 
 
 namespace FrigoTab {
@@ -19,7 +18,14 @@ namespace FrigoTab {
             this.bottomRight = bottomRight;
         }
 
-        public Rect ScreenToClient(WindowHandle window) => new Rect(topLeft.ScreenToClient(window), bottomRight.ScreenToClient(window));
-        public Size Size() => new Size(bottomRight.X - topLeft.X, bottomRight.Y - topLeft.Y);
+        public Rect ScreenToClient(WindowHandle window)
+        {
+            return new(topLeft.ScreenToClient(window), bottomRight.ScreenToClient(window));
+        }
+
+        public Size Size()
+        {
+            return new(bottomRight.X - topLeft.X, bottomRight.Y - topLeft.Y);
+        }
     }
 }

@@ -18,18 +18,12 @@
  * along with Switcheroo.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using Serilog;
-using ManagedWinapi;
-using ManagedWinapi.Windows;
-using Newtonsoft.Json;
-using Switcheroo.Core;
-using Switcheroo.Core.Matchers;
-using Switcheroo.Properties;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -41,33 +35,39 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using ManagedWinapi;
+using ManagedWinapi.Windows;
+using Newtonsoft.Json;
+using Serilog;
+using Switcheroo.Core;
+using Switcheroo.Core.Matchers;
+using Switcheroo.Properties;
 using Application = System.Windows.Application;
-using ToolStripMenuItem = System.Windows.Forms.ToolStripMenuItem;
 using MessageBox = System.Windows.MessageBox;
+using MouseEventArgs = System.Windows.Forms.MouseEventArgs;
 
 
 namespace Switcheroo {
     public partial class MainWindow : Window {
-        private WindowCloser _windowCloser;
-        private List<AppWindowViewModel> _unfilteredWindowList;
-        private ObservableCollection<AppWindowViewModel> _filteredWindowList;
-        private NotifyIcon _notifyIcon;
-        private HotKey _hotkey;
-
-        public static readonly RoutedUICommand CloseWindowCommand = new RoutedUICommand();
-        public static readonly RoutedUICommand SwitchToWindowCommand = new RoutedUICommand();
-        public static readonly RoutedUICommand ScrollListDownCommand = new RoutedUICommand();
-        public static readonly RoutedUICommand ScrollListUpCommand = new RoutedUICommand();
-        public static readonly RoutedUICommand ScrollListPageDownCommand = new RoutedUICommand();
-        public static readonly RoutedUICommand ScrollListPageUpCommand = new RoutedUICommand();
-        public static readonly RoutedUICommand ScrollListHomeCommand = new RoutedUICommand();
-        public static readonly RoutedUICommand ScrollListEndCommand = new RoutedUICommand();
-        private OptionsWindow _optionsWindow;
+        public static readonly RoutedUICommand CloseWindowCommand = new();
+        public static readonly RoutedUICommand SwitchToWindowCommand = new();
+        public static readonly RoutedUICommand ScrollListDownCommand = new();
+        public static readonly RoutedUICommand ScrollListUpCommand = new();
+        public static readonly RoutedUICommand ScrollListPageDownCommand = new();
+        public static readonly RoutedUICommand ScrollListPageUpCommand = new();
+        public static readonly RoutedUICommand ScrollListHomeCommand = new();
+        public static readonly RoutedUICommand ScrollListEndCommand = new();
         private AboutWindow _aboutWindow;
-        private AltTabHook _altTabHook;
-        private SystemWindow _foregroundWindow;
         private bool _altTabAutoSwitch;
-        private bool _sortWinList = false;
+        private AltTabHook _altTabHook;
+        private ObservableCollection<AppWindowViewModel> _filteredWindowList;
+        private SystemWindow _foregroundWindow;
+        private HotKey _hotkey;
+        private NotifyIcon _notifyIcon;
+        private OptionsWindow _optionsWindow;
+        private bool _sortWinList;
+        private List<AppWindowViewModel> _unfilteredWindowList;
+        private WindowCloser _windowCloser;
 
         public MainWindow()
         {
@@ -88,6 +88,26 @@ namespace Switcheroo {
             Theme.LoadTheme();
 
             Opacity = 0;
+        }
+
+        private void Toggle_sortWinList()
+        {
+            _sortWinList = !_sortWinList;
+            Toggle_MenuItem("Alpha&betical Sort");
+        }
+
+        private void Toggle_MenuItem(string text)
+        {
+            foreach (ToolStripMenuItem mi in _notifyIcon.ContextMenuStrip.Container.Components) {
+                if (mi.Text == text) {
+                    mi.Checked = !mi.Checked;
+                }
+            }
+        }
+
+        private enum InitialFocus {
+            NextItem,
+            PreviousItem
         }
 
         /// =================================
@@ -244,13 +264,13 @@ namespace Switcheroo {
                 Text = "Switcheroo",
                 Icon = icon,
                 Visible = true,
-                ContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(container),
+                ContextMenuStrip = new ContextMenuStrip(container),
             };
 
-            _notifyIcon.MouseClick += new System.Windows.Forms.MouseEventHandler(NotifyIconMouseClick);
+            _notifyIcon.MouseClick += NotifyIconMouseClick;
         }
 
-        void NotifyIconMouseClick(object sender, System.Windows.Forms.MouseEventArgs e)
+        private void NotifyIconMouseClick(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left) {
                 if (Visibility != Visibility.Visible) {
@@ -330,8 +350,8 @@ namespace Switcheroo {
         }
 
         /// <summary>
-        /// Export JSON of currently running windows.
-        /// JSON Structure: arrays of window titles are grouped under unique process names which are sorted alphabetically.
+        ///     Export JSON of currently running windows.
+        ///     JSON Structure: arrays of window titles are grouped under unique process names which are sorted alphabetically.
         /// </summary>
         private void ExportToJSON()
         {
@@ -340,23 +360,23 @@ namespace Switcheroo {
 
             var winsDict = _unfilteredWindowList.GroupBy(x => x.ProcessTitle).ToDictionary(x => x.Key, x => x.Select(y => y.WindowTitle));
 
-            string JSON_output = JsonConvert.SerializeObject(winsDict);
+            var JSON_output = JsonConvert.SerializeObject(winsDict);
 
-            SaveFileDialog SaveFileDialog1 = new SaveFileDialog();
+            var SaveFileDialog1 = new SaveFileDialog();
             SaveFileDialog1.Title = "Save list to";
             SaveFileDialog1.DefaultExt = "txt";
             SaveFileDialog1.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
             SaveFileDialog1.ShowDialog();
 
             if (SaveFileDialog1.FileName != "") {
-                using (System.IO.StreamWriter file = new System.IO.StreamWriter(@SaveFileDialog1.FileName, false)) {
+                using (var file = new StreamWriter(SaveFileDialog1.FileName, false)) {
                     file.Write(JSON_output);
                 }
             }
         }
 
         /// <summary>
-        /// Populates the window list with the current running windows.
+        ///     Populates the window list with the current running windows.
         /// </summary>
         private void LoadData(InitialFocus focus)
         {
@@ -382,7 +402,7 @@ namespace Switcheroo {
                     new XamlHighlighter().Highlight(new[] { new StringPart(_unfilteredWindowList[i].AppWindow.ProcessTitle) });
             }
 
-            if (_sortWinList == true) {
+            if (_sortWinList) {
                 _unfilteredWindowList = _unfilteredWindowList.OrderBy(x => x.FormattedProcessTitle).ToList();
             }
 
@@ -391,7 +411,7 @@ namespace Switcheroo {
                 _unfilteredWindowList[i].FormattedTitle = new XamlHighlighter().Highlight(new[] { new StringPart("" + (i + 1) + " ", true) }) + _unfilteredWindowList[i].FormattedTitle;
             }
 
-            if (_sortWinList == true) {
+            if (_sortWinList) {
                 lb.DataContext = null;
                 lb.DataContext = _unfilteredWindowList;
             }
@@ -428,7 +448,7 @@ namespace Switcheroo {
         }
 
         /// <summary>
-        /// Place the Switcheroo window in the center of the screen
+        ///     Place the Switcheroo window in the center of the screen
         /// </summary>
         private void CenterWindow()
         {
@@ -445,7 +465,7 @@ namespace Switcheroo {
         }
 
         /// <summary>
-        /// Switches the window associated with the selected item.
+        ///     Switches the window associated with the selected item.
         /// </summary>
         private void Switch()
         {
@@ -477,7 +497,7 @@ namespace Switcheroo {
 
         /// =================================
         /// <summary>
-        /// Show Options dialog.
+        ///     Show Options dialog.
         /// </summary>
         private void Options()
         {
@@ -494,7 +514,7 @@ namespace Switcheroo {
         }
 
         /// <summary>
-        /// Show About dialog.
+        ///     Show About dialog.
         /// </summary>
         private void About()
         {
@@ -511,7 +531,7 @@ namespace Switcheroo {
         }
 
         /// <summary>
-        /// Quit Switcheroo
+        ///     Quit Switcheroo
         /// </summary>
         private void Quit()
         {
@@ -522,7 +542,7 @@ namespace Switcheroo {
         }
 
         /// <summary>
-        /// Toggle alphabetical order program sort
+        ///     Toggle alphabetical order program sort
         /// </summary>
         private void sortAZMenuItem_Click(ToolStripMenuItem menuItem)
         {
@@ -531,7 +551,7 @@ namespace Switcheroo {
         }
 
         /// <summary>
-        /// Context menu "Export to Json"
+        ///     Context menu "Export to Json"
         /// </summary>
         private void exportToJSON_MenuItem_Click(ToolStripMenuItem menuItem)
         {
@@ -545,7 +565,7 @@ namespace Switcheroo {
         #region Event Handlers
 
         /// =================================
-        private void OnClose(object sender, System.ComponentModel.CancelEventArgs e)
+        private void OnClose(object sender, CancelEventArgs e)
         {
             e.Cancel = true;
             HideWindow();
@@ -711,7 +731,7 @@ namespace Switcheroo {
         {
             var windows = lb.SelectedItems.Cast<AppWindowViewModel>().ToList();
             foreach (var win in windows) {
-                bool isClosed = await _windowCloser.TryCloseAsync(win);
+                var isClosed = await _windowCloser.TryCloseAsync(win);
                 if (isClosed)
                     RemoveWindow(win);
             }
@@ -723,8 +743,8 @@ namespace Switcheroo {
         private void MenuItem_Duplicate(object sender, RoutedEventArgs e)
         {
             foreach (var item in lb.SelectedItems) {
-                var torun = _unfilteredWindowList[lb.SelectedIndex].AppWindow.ExecutablePath.ToString();
-                System.Diagnostics.Process.Start(torun);
+                var torun = _unfilteredWindowList[lb.SelectedIndex].AppWindow.ExecutablePath;
+                Process.Start(torun);
             }
 
             HideWindow();
@@ -734,7 +754,7 @@ namespace Switcheroo {
         {
             var windows = lb.SelectedItems.Cast<AppWindowViewModel>().ToList();
             foreach (var win in windows) {
-                bool isClosed = await _windowCloser.TryCloseAsync(win);
+                var isClosed = await _windowCloser.TryCloseAsync(win);
                 if (isClosed)
                     RemoveWindow(win);
             }
@@ -747,7 +767,7 @@ namespace Switcheroo {
 
         private void RemoveWindow(AppWindowViewModel window)
         {
-            int index = _filteredWindowList.IndexOf(window);
+            var index = _filteredWindowList.IndexOf(window);
             if (index < 0)
                 return;
 
@@ -806,7 +826,7 @@ namespace Switcheroo {
 
         private void ScrollListPageUp(object sender, ExecutedRoutedEventArgs e)
         {
-            double n = NumOfVisibleRows();
+            var n = NumOfVisibleRows();
 
             if (lb.SelectedIndex - n >= 0)
                 lb.SelectedIndex = Convert.ToInt32(lb.SelectedIndex - n);
@@ -819,7 +839,7 @@ namespace Switcheroo {
 
         private void ScrollListPageDown(object sender, ExecutedRoutedEventArgs e)
         {
-            double n = NumOfVisibleRows();
+            var n = NumOfVisibleRows();
 
             if (n + lb.SelectedIndex <= lb.Items.Count - 1)
                 lb.SelectedIndex = Convert.ToInt32(n);
@@ -884,25 +904,5 @@ namespace Switcheroo {
         }
 
         #endregion
-
-        private enum InitialFocus {
-            NextItem,
-            PreviousItem
-        }
-
-        void Toggle_sortWinList()
-        {
-            _sortWinList = !_sortWinList;
-            Toggle_MenuItem("Alpha&betical Sort");
-        }
-
-        void Toggle_MenuItem(String text)
-        {
-            foreach (ToolStripMenuItem mi in _notifyIcon.ContextMenuStrip.Container.Components) {
-                if ((String) mi.Text == text) {
-                    mi.Checked = !mi.Checked;
-                }
-            }
-        }
     }
 }

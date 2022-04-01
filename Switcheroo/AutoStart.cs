@@ -30,7 +30,7 @@ namespace Switcheroo {
     // http://stackoverflow.com/a/19914018/198065
     public class AutoStart {
         public bool IsEnabled {
-            get { return HasShortcut(); }
+            get => HasShortcut();
 
             set {
                 var appLink = GetAppLinkPath();

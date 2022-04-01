@@ -27,7 +27,7 @@ namespace Switcheroo.Core {
     public class WindowFinder {
         public List<AppWindow> GetWindows()
         {
-            var appWindows = new frigo::WindowFinder().Windows.ToList();
+            var appWindows = new frigo.WindowFinder().Windows.ToList();
             var filtered = AppWindow.AllToplevelWindows
                 .Where(a => {
                     var match = appWindows.Find(h => h.handle == a.HWnd) != frigo.WindowHandle.Null;

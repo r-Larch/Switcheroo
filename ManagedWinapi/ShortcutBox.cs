@@ -1,28 +1,24 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
-using System.Runtime.InteropServices;
 
 
 namespace ManagedWinapi {
     /// <summary>
-    /// A <see cref="TextBox" /> that can be used to select a keyboard shortcut.
-    /// A context menu allows selecting keys that are not available directly
-    /// by typing them.
+    ///     A <see cref="TextBox" /> that can be used to select a keyboard shortcut.
+    ///     A context menu allows selecting keys that are not available directly
+    ///     by typing them.
     /// </summary>
     public partial class ShortcutBox : TextBox {
-        private Keys key;
-        private bool shift;
         private bool alt;
         private bool ctrl;
+
+        private bool currWindowsKey;
+        private Keys key;
+        private bool shift;
         private bool windowsKey;
 
         /// <summary>
-        /// Creates a new shortcut box.
+        ///     Creates a new shortcut box.
         /// </summary>
         public ShortcutBox()
         {
@@ -41,11 +37,11 @@ namespace ManagedWinapi {
         }
 
         /// <summary>
-        /// The "non-modifier" key code of the currently selected shortcut, or
-        /// <see cref="Keys.None"/> if no key is selected.
+        ///     The "non-modifier" key code of the currently selected shortcut, or
+        ///     <see cref="Keys.None" /> if no key is selected.
         /// </summary>
         public Keys KeyCode {
-            get { return key; }
+            get => key;
             set {
                 key = value;
                 RefreshText();
@@ -53,10 +49,10 @@ namespace ManagedWinapi {
         }
 
         /// <summary>
-        /// Whether the currently selected shortcut includes the Shift key.
+        ///     Whether the currently selected shortcut includes the Shift key.
         /// </summary>
         public bool Shift {
-            get { return shift; }
+            get => shift;
             set {
                 shift = value;
                 shiftMenuItem.Checked = value;
@@ -65,10 +61,10 @@ namespace ManagedWinapi {
         }
 
         /// <summary>
-        /// Whether the currently selected shortcut includes the Alt key.
+        ///     Whether the currently selected shortcut includes the Alt key.
         /// </summary>
         public bool Alt {
-            get { return alt; }
+            get => alt;
             set {
                 alt = value;
                 altMenuItem.Checked = value;
@@ -77,10 +73,10 @@ namespace ManagedWinapi {
         }
 
         /// <summary>
-        /// Whether the currently selected shortcut includes the Control key.
+        ///     Whether the currently selected shortcut includes the Control key.
         /// </summary>
         public bool Ctrl {
-            get { return ctrl; }
+            get => ctrl;
             set {
                 ctrl = value;
                 ctrlMenuItem.Checked = value;
@@ -89,10 +85,10 @@ namespace ManagedWinapi {
         }
 
         /// <summary>
-        /// Whether the currently selected shortcut includes the Windows key.
+        ///     Whether the currently selected shortcut includes the Windows key.
         /// </summary>
         public bool WindowsKey {
-            get { return windowsKey; }
+            get => windowsKey;
             set {
                 windowsKey = value;
                 winMenuItem.Checked = value;
@@ -101,11 +97,11 @@ namespace ManagedWinapi {
         }
 
         /// <summary>
-        /// The textual representation of the currently selected key.
-        /// This property cannot be set.
+        ///     The textual representation of the currently selected key.
+        ///     This property cannot be set.
         /// </summary>
         public override string Text {
-            get { return base.Text; }
+            get => base.Text;
             set {
                 // ignore
             }
@@ -131,15 +127,13 @@ namespace ManagedWinapi {
             if (alt) s = GetKeyName(Keys.Menu) + " + " + s;
             if (ctrl) s = GetKeyName(Keys.ControlKey) + " + " + s;
             base.Text = s;
-            base.SelectionStart = s.Length;
+            SelectionStart = s.Length;
         }
 
         private static string GetKeyName(Keys key)
         {
             return new KeyboardKey(key).KeyName;
         }
-
-        private bool currWindowsKey = false;
 
         private void ShortcutBox_KeyDown(object sender, KeyEventArgs e)
         {

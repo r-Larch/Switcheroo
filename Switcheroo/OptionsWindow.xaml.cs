@@ -18,13 +18,13 @@
  * along with Switcheroo.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using ManagedWinapi;
-using Switcheroo.Core;
-using Switcheroo.Properties;
 using System.Text;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
+using ManagedWinapi;
+using Switcheroo.Core;
+using Switcheroo.Properties;
 using Application = System.Windows.Application;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
@@ -147,6 +147,43 @@ namespace Switcheroo {
             _hotkeyViewModel = previewHotkeyModel;
         }
 
+        private void HotkeyPreview_OnGotFocus(object sender, RoutedEventArgs e)
+        {
+            // Disable the current hotkey while the hotkey field is active
+            _hotkey.Enabled = false;
+        }
+
+        private void HotkeyPreview_OnLostFocus(object sender, RoutedEventArgs e)
+        {
+            try {
+                _hotkey.Enabled = true;
+            }
+            catch (HotkeyAlreadyInUseException) {
+                // It is alright if the hotkey can't be reactivated
+            }
+        }
+
+        private void AltTabCheckBox_OnChecked(object sender, RoutedEventArgs e)
+        {
+            AutoSwitch.IsEnabled = true;
+        }
+
+        private void AltTabCheckBox_OnUnchecked(object sender, RoutedEventArgs e)
+        {
+            AutoSwitch.IsEnabled = false;
+            AutoSwitch.IsChecked = false;
+        }
+
+        private void HotKeyCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            HotkeyPreview.IsEnabled = true;
+        }
+
+        private void HotKeyCheckBox_OnUnchecked(object sender, RoutedEventArgs e)
+        {
+            HotkeyPreview.IsEnabled = false;
+        }
+
         private class HotkeyViewModel {
             public Key KeyCode { get; set; }
             public bool Shift { get; set; }
@@ -188,43 +225,6 @@ namespace Switcheroo {
                 shortcutText.Append(keyString);
                 return shortcutText.ToString();
             }
-        }
-
-        private void HotkeyPreview_OnGotFocus(object sender, RoutedEventArgs e)
-        {
-            // Disable the current hotkey while the hotkey field is active
-            _hotkey.Enabled = false;
-        }
-
-        private void HotkeyPreview_OnLostFocus(object sender, RoutedEventArgs e)
-        {
-            try {
-                _hotkey.Enabled = true;
-            }
-            catch (HotkeyAlreadyInUseException) {
-                // It is alright if the hotkey can't be reactivated
-            }
-        }
-
-        private void AltTabCheckBox_OnChecked(object sender, RoutedEventArgs e)
-        {
-            AutoSwitch.IsEnabled = true;
-        }
-
-        private void AltTabCheckBox_OnUnchecked(object sender, RoutedEventArgs e)
-        {
-            AutoSwitch.IsEnabled = false;
-            AutoSwitch.IsChecked = false;
-        }
-
-        private void HotKeyCheckBox_Checked(object sender, RoutedEventArgs e)
-        {
-            HotkeyPreview.IsEnabled = true;
-        }
-
-        private void HotKeyCheckBox_OnUnchecked(object sender, RoutedEventArgs e)
-        {
-            HotkeyPreview.IsEnabled = false;
         }
     }
 }

@@ -37,17 +37,14 @@ namespace Switcheroo {
         private const string _className = "PortableSettingsProvider";
         private XmlDocument _xmlDocument;
 
-        private string _filePath {
-            get {
-                return Path.Combine(Path.GetDirectoryName(Application.ExecutablePath),
-                    string.Format("{0}.settings", ApplicationName));
-            }
-        }
+        private string _filePath =>
+            Path.Combine(Path.GetDirectoryName(Application.ExecutablePath),
+                string.Format("{0}.settings", ApplicationName));
 
         private XmlNode _localSettingsNode {
             get {
-                XmlNode settingsNode = GetSettingsNode(_localSettingsNodeName);
-                XmlNode machineNode = settingsNode.SelectSingleNode(Environment.MachineName.ToLowerInvariant());
+                var settingsNode = GetSettingsNode(_localSettingsNodeName);
+                var machineNode = settingsNode.SelectSingleNode(Environment.MachineName.ToLowerInvariant());
 
                 if (machineNode == null) {
                     machineNode = _rootDocument.CreateElement(Environment.MachineName.ToLowerInvariant());
@@ -58,13 +55,9 @@ namespace Switcheroo {
             }
         }
 
-        private XmlNode _globalSettingsNode {
-            get { return GetSettingsNode(_globalSettingsNodeName); }
-        }
+        private XmlNode _globalSettingsNode => GetSettingsNode(_globalSettingsNodeName);
 
-        private XmlNode _rootNode {
-            get { return _rootDocument.SelectSingleNode(_rootNodeName); }
-        }
+        private XmlNode _rootNode => _rootDocument.SelectSingleNode(_rootNodeName);
 
         private XmlDocument _rootDocument {
             get {
@@ -87,12 +80,28 @@ namespace Switcheroo {
         }
 
         public override string ApplicationName {
-            get { return Path.GetFileNameWithoutExtension(Application.ExecutablePath); }
+            get => Path.GetFileNameWithoutExtension(Application.ExecutablePath);
             set { }
         }
 
-        public override string Name {
-            get { return _className; }
+        public override string Name => _className;
+
+        public void Reset(SettingsContext context)
+        {
+            _localSettingsNode.RemoveAll();
+            _globalSettingsNode.RemoveAll();
+
+            _xmlDocument.Save(_filePath);
+        }
+
+        public SettingsPropertyValue GetPreviousVersion(SettingsContext context, SettingsProperty property)
+        {
+            // do nothing
+            return new SettingsPropertyValue(property);
+        }
+
+        public void Upgrade(SettingsContext context, SettingsPropertyCollection properties)
+        {
         }
 
         public override void Initialize(string name, NameValueCollection config)
@@ -121,7 +130,7 @@ namespace Switcheroo {
         public override SettingsPropertyValueCollection GetPropertyValues(SettingsContext context,
             SettingsPropertyCollection collection)
         {
-            SettingsPropertyValueCollection values = new SettingsPropertyValueCollection();
+            var values = new SettingsPropertyValueCollection();
 
             foreach (SettingsProperty property in collection) {
                 values.Add(new SettingsPropertyValue(property) {
@@ -134,18 +143,18 @@ namespace Switcheroo {
 
         private void SetValue(SettingsPropertyValue propertyValue)
         {
-            XmlNode targetNode = IsGlobal(propertyValue.Property)
+            var targetNode = IsGlobal(propertyValue.Property)
                 ? _globalSettingsNode
                 : _localSettingsNode;
 
-            XmlNode settingNode = targetNode.SelectSingleNode(string.Format("setting[@name='{0}']", propertyValue.Name));
+            var settingNode = targetNode.SelectSingleNode(string.Format("setting[@name='{0}']", propertyValue.Name));
 
             if (settingNode != null)
                 settingNode.InnerText = propertyValue.SerializedValue.ToString();
             else {
                 settingNode = _rootDocument.CreateElement("setting");
 
-                XmlAttribute nameAttribute = _rootDocument.CreateAttribute("name");
+                var nameAttribute = _rootDocument.CreateAttribute("name");
                 nameAttribute.Value = propertyValue.Name;
 
                 settingNode.Attributes.Append(nameAttribute);
@@ -157,8 +166,8 @@ namespace Switcheroo {
 
         private string GetValue(SettingsProperty property)
         {
-            XmlNode targetNode = IsGlobal(property) ? _globalSettingsNode : _localSettingsNode;
-            XmlNode settingNode = targetNode.SelectSingleNode(string.Format("setting[@name='{0}']", property.Name));
+            var targetNode = IsGlobal(property) ? _globalSettingsNode : _localSettingsNode;
+            var settingNode = targetNode.SelectSingleNode(string.Format("setting[@name='{0}']", property.Name));
 
             if (settingNode == null)
                 return property.DefaultValue != null ? property.DefaultValue.ToString() : string.Empty;
@@ -178,7 +187,7 @@ namespace Switcheroo {
 
         private XmlNode GetSettingsNode(string name)
         {
-            XmlNode settingsNode = _rootNode.SelectSingleNode(name);
+            var settingsNode = _rootNode.SelectSingleNode(name);
 
             if (settingsNode == null) {
                 settingsNode = _rootDocument.CreateElement(name);
@@ -190,29 +199,11 @@ namespace Switcheroo {
 
         public XmlDocument GetBlankXmlDocument()
         {
-            XmlDocument blankXmlDocument = new XmlDocument();
+            var blankXmlDocument = new XmlDocument();
             blankXmlDocument.AppendChild(blankXmlDocument.CreateXmlDeclaration("1.0", "utf-8", string.Empty));
             blankXmlDocument.AppendChild(blankXmlDocument.CreateElement(_rootNodeName));
 
             return blankXmlDocument;
-        }
-
-        public void Reset(SettingsContext context)
-        {
-            _localSettingsNode.RemoveAll();
-            _globalSettingsNode.RemoveAll();
-
-            _xmlDocument.Save(_filePath);
-        }
-
-        public SettingsPropertyValue GetPreviousVersion(SettingsContext context, SettingsProperty property)
-        {
-            // do nothing
-            return new SettingsPropertyValue(property);
-        }
-
-        public void Upgrade(SettingsContext context, SettingsPropertyCollection properties)
-        {
         }
     }
 }

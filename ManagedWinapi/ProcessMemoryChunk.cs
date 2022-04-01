@@ -19,94 +19,60 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Text;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.ComponentModel;
 
 
 namespace ManagedWinapi {
     /// <summary>
-    /// A chunk in another processes memory. Mostly used to allocate buffers
-    /// in another process for sending messages to its windows.
+    ///     A chunk in another processes memory. Mostly used to allocate buffers
+    ///     in another process for sending messages to its windows.
     /// </summary>
     public class ProcessMemoryChunk : IDisposable {
-        readonly Process process;
-        readonly IntPtr location, hProcess;
-        readonly int size;
-        readonly bool free;
+        private readonly bool free;
+        private readonly IntPtr location, hProcess;
 
         /// <summary>
-        /// Create a new memory chunk that points to existing memory.
-        /// Mostly used to read that memory.
+        ///     Create a new memory chunk that points to existing memory.
+        ///     Mostly used to read that memory.
         /// </summary>
         public ProcessMemoryChunk(Process process, IntPtr location, int size)
         {
-            this.process = process;
-            this.hProcess = OpenProcess(ProcessAccessFlags.VMOperation | ProcessAccessFlags.VMRead | ProcessAccessFlags.VMWrite, false, process.Id);
+            this.Process = process;
+            hProcess = OpenProcess(ProcessAccessFlags.VMOperation | ProcessAccessFlags.VMRead | ProcessAccessFlags.VMWrite, false, process.Id);
             ApiHelper.FailIfZero(hProcess);
             this.location = location;
-            this.size = size;
-            this.free = false;
+            this.Size = size;
+            free = false;
         }
 
         private ProcessMemoryChunk(Process process, IntPtr hProcess, IntPtr location, int size, bool free)
         {
-            this.process = process;
+            this.Process = process;
             this.hProcess = hProcess;
             this.location = location;
-            this.size = size;
+            this.Size = size;
             this.free = free;
         }
 
         /// <summary>
-        /// The process this chunk refers to.
+        ///     The process this chunk refers to.
         /// </summary>
-        public Process Process {
-            get { return process; }
-        }
+        public Process Process { get; }
 
         /// <summary>
-        /// The location in memory (of the other process) this chunk refers to.
+        ///     The location in memory (of the other process) this chunk refers to.
         /// </summary>
-        public IntPtr Location {
-            get { return location; }
-        }
+        public IntPtr Location => location;
 
         /// <summary>
-        /// The size of the chunk.
+        ///     The size of the chunk.
         /// </summary>
-        public int Size {
-            get { return size; }
-        }
+        public int Size { get; }
 
         /// <summary>
-        /// Allocate a chunk in another process.
-        /// </summary>
-        public static ProcessMemoryChunk Alloc(Process process, int size)
-        {
-            IntPtr hProcess = OpenProcess(ProcessAccessFlags.VMOperation | ProcessAccessFlags.VMRead | ProcessAccessFlags.VMWrite, false, process.Id);
-            IntPtr remotePointer = VirtualAllocEx(hProcess, IntPtr.Zero, (uint) size,
-                MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-            ApiHelper.FailIfZero(remotePointer);
-            return new ProcessMemoryChunk(process, hProcess, remotePointer, size, true);
-        }
-
-        /// <summary>
-        /// Allocate a chunk in another process and unmarshal a struct
-        /// there.
-        /// </summary>
-        public static ProcessMemoryChunk AllocStruct(Process process, object structure)
-        {
-            int size = Marshal.SizeOf(structure);
-            ProcessMemoryChunk result = Alloc(process, size);
-            result.WriteStructure(0, structure);
-            return result;
-        }
-
-        /// <summary>
-        /// Free the memory in the other process, if it has been allocated before.
+        ///     Free the memory in the other process, if it has been allocated before.
         /// </summary>
         public void Dispose()
         {
@@ -119,12 +85,36 @@ namespace ManagedWinapi {
         }
 
         /// <summary>
-        /// Write a structure into this chunk.
+        ///     Allocate a chunk in another process.
+        /// </summary>
+        public static ProcessMemoryChunk Alloc(Process process, int size)
+        {
+            var hProcess = OpenProcess(ProcessAccessFlags.VMOperation | ProcessAccessFlags.VMRead | ProcessAccessFlags.VMWrite, false, process.Id);
+            var remotePointer = VirtualAllocEx(hProcess, IntPtr.Zero, (uint) size,
+                MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+            ApiHelper.FailIfZero(remotePointer);
+            return new ProcessMemoryChunk(process, hProcess, remotePointer, size, true);
+        }
+
+        /// <summary>
+        ///     Allocate a chunk in another process and unmarshal a struct
+        ///     there.
+        /// </summary>
+        public static ProcessMemoryChunk AllocStruct(Process process, object structure)
+        {
+            var size = Marshal.SizeOf(structure);
+            var result = Alloc(process, size);
+            result.WriteStructure(0, structure);
+            return result;
+        }
+
+        /// <summary>
+        ///     Write a structure into this chunk.
         /// </summary>
         public void WriteStructure(int offset, object structure)
         {
-            int size = Marshal.SizeOf(structure);
-            IntPtr localPtr = Marshal.AllocHGlobal(size);
+            var size = Marshal.SizeOf(structure);
+            var localPtr = Marshal.AllocHGlobal(size);
             try {
                 Marshal.StructureToPtr(structure, localPtr, false);
                 Write(offset, localPtr, size);
@@ -135,69 +125,69 @@ namespace ManagedWinapi {
         }
 
         /// <summary>
-        /// Write into this chunk.
+        ///     Write into this chunk.
         /// </summary>
         public void Write(int offset, IntPtr ptr, int length)
         {
             if (offset < 0) throw new ArgumentException("Offset may not be negative", "offset");
-            if (offset + length > size) throw new ArgumentException("Exceeding chunk size");
+            if (offset + length > Size) throw new ArgumentException("Exceeding chunk size");
             WriteProcessMemory(hProcess, new IntPtr(location.ToInt64() + offset), ptr, new UIntPtr((uint) length), IntPtr.Zero);
         }
 
         /// <summary>
-        /// Write a byte array into this chunk.
+        ///     Write a byte array into this chunk.
         /// </summary>
         public void Write(int offset, byte[] ptr)
         {
             if (offset < 0) throw new ArgumentException("Offset may not be negative", "offset");
-            if (offset + ptr.Length > size) throw new ArgumentException("Exceeding chunk size");
+            if (offset + ptr.Length > Size) throw new ArgumentException("Exceeding chunk size");
             WriteProcessMemory(hProcess, new IntPtr(location.ToInt64() + offset), ptr, new UIntPtr((uint) ptr.Length), IntPtr.Zero);
         }
 
         /// <summary>
-        /// Read this chunk.
+        ///     Read this chunk.
         /// </summary>
         /// <returns></returns>
         public byte[] Read()
         {
-            return Read(0, size);
+            return Read(0, Size);
         }
 
         /// <summary>
-        /// Read a part of this chunk.
+        ///     Read a part of this chunk.
         /// </summary>
         public byte[] Read(int offset, int length)
         {
-            if (offset + length > size) throw new ArgumentException("Exceeding chunk size");
-            byte[] result = new byte[length];
+            if (offset + length > Size) throw new ArgumentException("Exceeding chunk size");
+            var result = new byte[length];
             ReadProcessMemory(hProcess, new IntPtr(location.ToInt64() + offset), result, new UIntPtr((uint) length), IntPtr.Zero);
             return result;
         }
 
         /// <summary>
-        /// Read this chunk to a pointer in this process.
+        ///     Read this chunk to a pointer in this process.
         /// </summary>
         public void ReadToPtr(IntPtr ptr)
         {
-            ReadToPtr(0, size, ptr);
+            ReadToPtr(0, Size, ptr);
         }
 
         /// <summary>
-        /// Read a part of this chunk to a pointer in this process.
+        ///     Read a part of this chunk to a pointer in this process.
         /// </summary>
         public void ReadToPtr(int offset, int length, IntPtr ptr)
         {
-            if (offset + length > size) throw new ArgumentException("Exceeding chunk size");
+            if (offset + length > Size) throw new ArgumentException("Exceeding chunk size");
             ReadProcessMemory(hProcess, new IntPtr(location.ToInt64() + offset), ptr, new UIntPtr((uint) length), IntPtr.Zero);
         }
 
         /// <summary>
-        /// Read a part of this chunk to a structure.
+        ///     Read a part of this chunk to a structure.
         /// </summary>
         public object ReadToStructure(int offset, Type structureType)
         {
-            int size = Marshal.SizeOf(structureType);
-            IntPtr localPtr = Marshal.AllocHGlobal(size);
+            var size = Marshal.SizeOf(structureType);
+            var localPtr = Marshal.AllocHGlobal(size);
             try {
                 ReadToPtr(offset, size, localPtr);
                 return Marshal.PtrToStructure(localPtr, structureType);
@@ -248,7 +238,7 @@ namespace ManagedWinapi {
         #endregion
     }
 
-    internal enum ProcessAccessFlags : int {
+    internal enum ProcessAccessFlags {
         All = 0x001F0FFF,
         Terminate = 0x00000001,
         CreateThread = 0x00000002,

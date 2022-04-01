@@ -6,10 +6,13 @@ using System.Text;
 
 namespace FrigoTab {
     public class WindowFinder {
-        public readonly IList<WindowHandle> Windows = new List<WindowHandle>();
         public readonly IList<WindowHandle> ToolWindows = new List<WindowHandle>();
+        public readonly IList<WindowHandle> Windows = new List<WindowHandle>();
 
-        public WindowFinder() => EnumWindows(EnumWindowCallback, IntPtr.Zero);
+        public WindowFinder()
+        {
+            EnumWindows(EnumWindowCallback, IntPtr.Zero);
+        }
 
         private bool EnumWindowCallback(WindowHandle handle, IntPtr lParam)
         {
@@ -44,12 +47,12 @@ namespace FrigoTab {
 
         private static WindowType GetWindowType(WindowHandle handle)
         {
-            int cloaked = IsCloaked(handle);
+            var cloaked = IsCloaked(handle);
             if (cloaked > 0) {
                 return WindowType.Hidden;
             }
 
-            WindowStyles style = handle.GetWindowStyles();
+            var style = handle.GetWindowStyles();
             if (style.HasFlag(WindowStyles.Disabled)) {
                 return WindowType.Hidden;
             }
@@ -59,7 +62,7 @@ namespace FrigoTab {
                 return WindowType.Hidden;
             }
 
-            WindowExStyles ex = handle.GetWindowExStyles();
+            var ex = handle.GetWindowExStyles();
             if (ex.HasFlag(WindowExStyles.NoActivate)) {
                 return WindowType.Hidden;
             }
@@ -78,7 +81,7 @@ namespace FrigoTab {
 
         private static int IsCloaked(WindowHandle window)
         {
-            DwmGetWindowAttribute(window, WindowAttribute.Cloaked, out int cloaked, Marshal.SizeOf(typeof(bool)));
+            DwmGetWindowAttribute(window, WindowAttribute.Cloaked, out var cloaked, Marshal.SizeOf(typeof(bool)));
             return cloaked;
         }
 
@@ -90,8 +93,8 @@ namespace FrigoTab {
 
         private static WindowHandle GetLastActiveVisiblePopup(WindowHandle root)
         {
-            WindowHandle hwndWalk = WindowHandle.Null;
-            WindowHandle hwndTry = root;
+            var hwndWalk = WindowHandle.Null;
+            var hwndTry = root;
             while (hwndWalk != hwndTry) {
                 hwndWalk = hwndTry;
                 hwndTry = GetLastActivePopup(hwndWalk);
@@ -112,10 +115,10 @@ namespace FrigoTab {
         }
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+        private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        static extern int GetWindowTextLength(IntPtr hWnd);
+        private static extern int GetWindowTextLength(IntPtr hWnd);
 
         [DllImport("user32.dll")]
         private static extern bool EnumWindows(EnumWindowsProc enumFunc, IntPtr lParam);

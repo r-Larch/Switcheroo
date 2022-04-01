@@ -4,9 +4,13 @@ using System.Threading.Tasks;
 
 namespace Switcheroo {
     public class WindowCloser : IDisposable {
+        private static readonly TimeSpan CheckInterval = TimeSpan.FromMilliseconds(125);
         private bool _isDisposed;
 
-        private static readonly TimeSpan CheckInterval = TimeSpan.FromMilliseconds(125);
+        public void Dispose()
+        {
+            _isDisposed = true;
+        }
 
         public async Task<bool> TryCloseAsync(AppWindowViewModel window)
         {
@@ -17,11 +21,6 @@ namespace Switcheroo {
                 await Task.Delay(CheckInterval).ConfigureAwait(false);
 
             return window.AppWindow.IsClosedOrHidden;
-        }
-
-        public void Dispose()
-        {
-            _isDisposed = true;
         }
     }
 }

@@ -193,8 +193,7 @@
                                     </Image.Source>
                                 </Image>
                                 <TextBlock local:FormattedTextAttribute.FormattedText="{Binding Path=FormattedTitle}"
-                                           Grid.Row="0" Grid.Column="1" Margin="3,0">
-                                </TextBlock>
+                                           Grid.Row="0" Grid.Column="1" Margin="3,0" />
                                 <TextBlock
                                     local:FormattedTextAttribute.FormattedText="{Binding Path=FormattedProcessTitle}"
                                     Grid.Row="0" Grid.Column="2" Margin="0" TextAlignment="Right">

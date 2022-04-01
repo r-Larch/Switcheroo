@@ -19,36 +19,35 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.ComponentModel;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 
 
 namespace ManagedWinapi.Hooks {
     /// <summary>
-    /// Abstract base class for hooks that can be used to create or playback 
-    /// a log of keyboard and mouse events.
+    ///     Abstract base class for hooks that can be used to create or playback
+    ///     a log of keyboard and mouse events.
     /// </summary>
     public abstract class JournalHook : Hook {
-        /// <summary>
-        /// Occurs when the journal activity has been cancelled by
-        /// CTRL+ALT+DEL or CTRL+ESC.
-        /// </summary>
-        public event EventHandler JournalCancelled;
         private readonly LocalMessageHook lmh;
 
         /// <summary>
-        /// Creates a new journal hook.
+        ///     Creates a new journal hook.
         /// </summary>
         public JournalHook(HookType type)
             : base(type, true, false)
         {
             lmh = new LocalMessageHook();
-            lmh.MessageOccurred += new LocalMessageHook.MessageCallback(lmh_Callback);
+            lmh.MessageOccurred += lmh_Callback;
         }
 
-        private void lmh_Callback(System.Windows.Forms.Message msg)
+        /// <summary>
+        ///     Occurs when the journal activity has been cancelled by
+        ///     CTRL+ALT+DEL or CTRL+ESC.
+        /// </summary>
+        public event EventHandler JournalCancelled;
+
+        private void lmh_Callback(Message msg)
         {
             if (msg.Msg == WM_CANCELJOURNAL) {
                 hooked = false;
@@ -60,7 +59,7 @@ namespace ManagedWinapi.Hooks {
         }
 
         /// <summary>
-        /// Hooks the hook.
+        ///     Hooks the hook.
         /// </summary>
         public override void StartHook()
         {
@@ -70,7 +69,7 @@ namespace ManagedWinapi.Hooks {
         }
 
         /// <summary>
-        /// Unhooks the hook.
+        ///     Unhooks the hook.
         /// </summary>
         public override void Unhook()
         {
@@ -96,14 +95,9 @@ namespace ManagedWinapi.Hooks {
     }
 
     /// <summary>
-    /// An event that has been recorded by a journal hook.
+    ///     An event that has been recorded by a journal hook.
     /// </summary>
     public class JournalMessage {
-        internal static JournalMessage Create(JournalHook.EVENTMSG msg)
-        {
-            return new JournalMessage(msg);
-        }
-
         private JournalHook.EVENTMSG msg;
 
         private JournalMessage(JournalHook.EVENTMSG msg)
@@ -112,7 +106,7 @@ namespace ManagedWinapi.Hooks {
         }
 
         /// <summary>
-        /// Creates a new journal message.
+        ///     Creates a new journal message.
         /// </summary>
         public JournalMessage(IntPtr hWnd, uint message, uint paramL, uint paramH, uint time)
         {
@@ -125,43 +119,40 @@ namespace ManagedWinapi.Hooks {
         }
 
         /// <summary>
-        /// The window this message has been sent to.
+        ///     The window this message has been sent to.
         /// </summary>
-        public IntPtr HWnd {
-            get { return msg.hWnd; }
-        }
+        public IntPtr HWnd => msg.hWnd;
 
         /// <summary>
-        /// The message.
+        ///     The message.
         /// </summary>
-        public uint Message {
-            get { return msg.message; }
-        }
+        public uint Message => msg.message;
 
         /// <summary>
-        /// The first parameter of the message.
+        ///     The first parameter of the message.
         /// </summary>
-        public uint ParamL {
-            get { return msg.paramL; }
-        }
+        public uint ParamL => msg.paramL;
 
         /// <summary>
-        /// The second parameter of the message.
+        ///     The second parameter of the message.
         /// </summary>
-        public uint ParamH {
-            get { return msg.paramH; }
-        }
+        public uint ParamH => msg.paramH;
 
         /// <summary>
-        /// The timestamp of the message.
+        ///     The timestamp of the message.
         /// </summary>
         public int Time {
-            get { return msg.time; }
-            set { msg.time = value; }
+            get => msg.time;
+            set => msg.time = value;
+        }
+
+        internal static JournalMessage Create(JournalHook.EVENTMSG msg)
+        {
+            return new JournalMessage(msg);
         }
 
         /// <summary>
-        /// Returns a System.String that represents the current System.Object.
+        ///     Returns a System.String that represents the current System.Object.
         /// </summary>
         public override string ToString()
         {
@@ -171,59 +162,55 @@ namespace ManagedWinapi.Hooks {
     }
 
     /// <summary>
-    /// Event data for a journal record event.
+    ///     Event data for a journal record event.
     /// </summary>
     public class JournalRecordEventArgs : EventArgs {
-        private JournalMessage msg;
-
         internal JournalRecordEventArgs(JournalMessage msg)
         {
-            this.msg = msg;
+            RecordedMessage = msg;
         }
 
         /// <summary>
-        /// The recorded message.
+        ///     The recorded message.
         /// </summary>
-        public JournalMessage RecordedMessage {
-            get { return msg; }
-        }
+        public JournalMessage RecordedMessage { get; }
     }
 
     /// <summary>
-    /// A hook that can be used to create a log of keyboard and mouse events.
+    ///     A hook that can be used to create a log of keyboard and mouse events.
     /// </summary>
     public class JournalRecordHook : JournalHook {
         /// <summary>
-        /// Occurs when a system modal dialog appears. This may be used
-        /// to stop recording.
-        /// </summary>
-        public event EventHandler SystemModalDialogAppeared;
-
-        /// <summary>
-        /// Occurs when a system modal dialog disappears. This may be used
-        /// to continue recording.
-        /// </summary>
-        public event EventHandler SystemModalDialogDisappeared;
-
-        /// <summary>
-        /// Occurs when an event can be recorded.
-        /// </summary>
-        public event EventHandler<JournalRecordEventArgs> RecordEvent;
-
-        /// <summary>
-        /// Creates a new journal record hook.
+        ///     Creates a new journal record hook.
         /// </summary>
         public JournalRecordHook()
             : base(HookType.WH_JOURNALRECORD)
         {
-            base.Callback += JournalRecordHook_Callback;
+            Callback += JournalRecordHook_Callback;
         }
+
+        /// <summary>
+        ///     Occurs when a system modal dialog appears. This may be used
+        ///     to stop recording.
+        /// </summary>
+        public event EventHandler SystemModalDialogAppeared;
+
+        /// <summary>
+        ///     Occurs when a system modal dialog disappears. This may be used
+        ///     to continue recording.
+        /// </summary>
+        public event EventHandler SystemModalDialogDisappeared;
+
+        /// <summary>
+        ///     Occurs when an event can be recorded.
+        /// </summary>
+        public event EventHandler<JournalRecordEventArgs> RecordEvent;
 
         private int JournalRecordHook_Callback(int code, IntPtr wParam, IntPtr lParam, ref bool callNext)
         {
             if (code == HC_ACTION) {
-                EVENTMSG em = (EVENTMSG) Marshal.PtrToStructure(lParam, typeof(EVENTMSG));
-                JournalMessage jm = JournalMessage.Create(em);
+                var em = (EVENTMSG) Marshal.PtrToStructure(lParam, typeof(EVENTMSG));
+                var jm = JournalMessage.Create(em);
                 if (RecordEvent != null) {
                     RecordEvent(this, new JournalRecordEventArgs(jm));
                 }
@@ -244,50 +231,51 @@ namespace ManagedWinapi.Hooks {
     }
 
     /// <summary>
-    /// A hook that can be used to playback a log of keyboard and mouse events.
+    ///     A hook that can be used to playback a log of keyboard and mouse events.
     /// </summary>
     public class JournalPlaybackHook : JournalHook {
         /// <summary>
-        /// Occurs when a system modal dialog appears. This may be used to 
-        /// stop playback.
-        /// </summary>
-        public event EventHandler SystemModalDialogAppeared;
-
-        /// <summary>
-        /// Occurs when a system modal dialog disappears. This may be used
-        /// to continue playback.
-        /// </summary>
-        public event EventHandler SystemModalDialogDisappeared;
-
-        /// <summary>
-        /// Occurs when the next journal message is needed. If the message is
-        /// <null/> and a timestamp in the future, it just waits for that time and
-        /// asks for a message again. If the message is <null/> and the timestamp is
-        /// in the past, playback stops.
-        /// </summary>
-        public event JournalQuery GetNextJournalMessage;
-        private int nextEventTime = 0;
-        private JournalMessage nextEvent = null;
-
-        /// <summary>
-        /// Represents a method that yields the next journal message.
+        ///     Represents a method that yields the next journal message.
         /// </summary>
         public delegate JournalMessage JournalQuery(ref int timestamp);
 
+        private JournalMessage nextEvent;
+        private int nextEventTime;
+
         /// <summary>
-        /// Creates a new journal playback hook.
+        ///     Creates a new journal playback hook.
         /// </summary>
         public JournalPlaybackHook()
             : base(HookType.WH_JOURNALPLAYBACK)
         {
-            base.Callback += JournalPlaybackHook_Callback;
+            Callback += JournalPlaybackHook_Callback;
         }
+
+        /// <summary>
+        ///     Occurs when a system modal dialog appears. This may be used to
+        ///     stop playback.
+        /// </summary>
+        public event EventHandler SystemModalDialogAppeared;
+
+        /// <summary>
+        ///     Occurs when a system modal dialog disappears. This may be used
+        ///     to continue playback.
+        /// </summary>
+        public event EventHandler SystemModalDialogDisappeared;
+
+        /// <summary>
+        ///     Occurs when the next journal message is needed. If the message is
+        ///     <null /> and a timestamp in the future, it just waits for that time and
+        ///     asks for a message again. If the message is <null /> and the timestamp is
+        ///     in the past, playback stops.
+        /// </summary>
+        public event JournalQuery GetNextJournalMessage;
 
         private int JournalPlaybackHook_Callback(int code, IntPtr wParam, IntPtr lParam, ref bool callNext)
         {
             if (code == HC_GETNEXT) {
                 callNext = false;
-                int tick = Environment.TickCount;
+                var tick = Environment.TickCount;
                 if (nextEventTime > tick) {
                     return nextEventTime - tick;
                 }
@@ -301,9 +289,8 @@ namespace ManagedWinapi.Hooks {
                             Unhook();
                             return 1;
                         }
-                        else {
-                            nextEventTime = nextEvent.Time;
-                        }
+
+                        nextEventTime = nextEvent.Time;
                     }
 
                     if (nextEventTime > tick) {
@@ -312,7 +299,7 @@ namespace ManagedWinapi.Hooks {
                 }
 
                 // now we have the next event, which should be sent
-                EVENTMSG em = (EVENTMSG) Marshal.PtrToStructure(lParam, typeof(EVENTMSG));
+                var em = (EVENTMSG) Marshal.PtrToStructure(lParam, typeof(EVENTMSG));
                 em.hWnd = nextEvent.HWnd;
                 em.time = nextEvent.Time;
                 em.message = nextEvent.Message;
@@ -321,7 +308,8 @@ namespace ManagedWinapi.Hooks {
                 Marshal.StructureToPtr(em, lParam, false);
                 return 0;
             }
-            else if (code == HC_SKIP) {
+
+            if (code == HC_SKIP) {
                 nextEvent = null;
                 nextEventTime = 0;
             }
@@ -339,31 +327,43 @@ namespace ManagedWinapi.Hooks {
     }
 
     /// <summary>
-    /// Convenience class that uses a journal playback hook to block keyboard
-    /// and mouse input for some time.
+    ///     Convenience class that uses a journal playback hook to block keyboard
+    ///     and mouse input for some time.
     /// </summary>
     public class InputLocker : IDisposable {
-        private int interval, count;
-        private JournalPlaybackHook hook;
+        private readonly JournalPlaybackHook hook;
+        private readonly int interval;
+        private int count;
 
         /// <summary>
-        /// Locks the input for <code>interval * count</code> milliseconds. The
-        /// lock can be canceled every <code>interval</code> milliseconds. If count is
-        /// negative, the lock will be active until cancelled.
+        ///     Locks the input for <code>interval * count</code> milliseconds. The
+        ///     lock can be canceled every <code>interval</code> milliseconds. If count is
+        ///     negative, the lock will be active until cancelled.
         /// </summary>
         /// <param name="interval">The interval to lock the input.</param>
         /// <param name="count">How often to lock the input.</param>
-        /// <param name="force">If <code>true</code>, the lock cannot be canceled
-        /// by pressing Control+Alt+Delete</param>
+        /// <param name="force">
+        ///     If <code>true</code>, the lock cannot be canceled
+        ///     by pressing Control+Alt+Delete
+        /// </param>
         public InputLocker(int interval, int count, bool force)
         {
             this.interval = interval;
             this.count = count;
             hook = new JournalPlaybackHook();
-            hook.GetNextJournalMessage += new JournalPlaybackHook.JournalQuery(hook_GetNextJournalMessage);
+            hook.GetNextJournalMessage += hook_GetNextJournalMessage;
             if (force)
-                hook.JournalCancelled += new EventHandler(hook_JournalCancelled);
+                hook.JournalCancelled += hook_JournalCancelled;
             hook.StartHook();
+        }
+
+        /// <summary>
+        ///     Unlocks the input.
+        /// </summary>
+        public void Dispose()
+        {
+            Unlock();
+            hook.Dispose();
         }
 
         private void hook_JournalCancelled(object sender, EventArgs e)
@@ -381,7 +381,7 @@ namespace ManagedWinapi.Hooks {
         }
 
         /// <summary>
-        /// Unlocks the input.
+        ///     Unlocks the input.
         /// </summary>
         public void Unlock()
         {
@@ -389,20 +389,13 @@ namespace ManagedWinapi.Hooks {
         }
 
         /// <summary>
-        /// Unlocks the input.
-        /// </summary>
-        public void Dispose()
-        {
-            Unlock();
-            hook.Dispose();
-        }
-
-        /// <summary>
-        /// Lock input for given number of milliseconds
+        ///     Lock input for given number of milliseconds
         /// </summary>
         /// <param name="millis">Number of milliseconds to lock</param>
-        /// <param name="force">If <code>true</code>, the lock cannot be canceled
-        /// by pressing Control+Alt+Delete</param>
+        /// <param name="force">
+        ///     If <code>true</code>, the lock cannot be canceled
+        ///     by pressing Control+Alt+Delete
+        /// </param>
         public static void LockInputFor(int millis, bool force)
         {
             new InputLocker(millis, 1, force);

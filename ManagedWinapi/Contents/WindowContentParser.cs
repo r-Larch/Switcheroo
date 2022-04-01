@@ -18,9 +18,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-using System;
-
-
 namespace ManagedWinapi.Windows.Contents {
     internal abstract class WindowContentParser {
         internal abstract bool CanParseContent(SystemWindow sw);
@@ -28,7 +25,7 @@ namespace ManagedWinapi.Windows.Contents {
 
         internal static WindowContent Parse(SystemWindow sw)
         {
-            WindowContentParser parser = ContentParserRegistry.Instance.GetParser(sw);
+            var parser = ContentParserRegistry.Instance.GetParser(sw);
             if (parser == null) return null;
             return parser.ParseContent(sw);
         }

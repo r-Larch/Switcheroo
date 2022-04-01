@@ -21,23 +21,22 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
-using ManagedWinapi.Windows;
 
 
 namespace ManagedWinapi.Audio.Mixer {
     /// <summary>
-    /// A control of a mixer line. This can be for example a volume slider
-    /// or a mute switch.
+    ///     A control of a mixer line. This can be for example a volume slider
+    ///     or a mute switch.
     /// </summary>
     public class MixerControl {
         /// <summary>
-        /// Occurs when the value of this control is changed
+        ///     Occurs when the value of this control is changed
         /// </summary>
         public EventHandler Changed;
 
         internal MIXERCONTROL ctrl;
-        internal Mixer mx;
         internal MixerLine ml;
+        internal Mixer mx;
 
         internal MixerControl(Mixer mx, MixerLine ml, MIXERCONTROL ctrl)
         {
@@ -47,87 +46,67 @@ namespace ManagedWinapi.Audio.Mixer {
         }
 
         /// <summary>
-        /// The ID of this control.
+        ///     The ID of this control.
         /// </summary>
-        public int Id {
-            get { return ctrl.dwControlID; }
-        }
+        public int Id => ctrl.dwControlID;
 
         /// <summary>
-        /// The short name of this control.
+        ///     The short name of this control.
         /// </summary>
-        public string ShortName {
-            get { return ctrl.szShortName; }
-        }
+        public string ShortName => ctrl.szShortName;
 
         /// <summary>
-        /// The long name of this control.
+        ///     The long name of this control.
         /// </summary>
-        public string LongName {
-            get { return ctrl.szName; }
-        }
+        public string LongName => ctrl.szName;
 
         /// <summary>
-        /// The class of this control. For example FADER or SWITCH.
+        ///     The class of this control. For example FADER or SWITCH.
         /// </summary>
-        public MixerControlClass Class {
-            get { return (MixerControlClass) (ctrl.dwControlType & MIXERCONTROL_CT_CLASS_MASK); }
-        }
+        public MixerControlClass Class => (MixerControlClass) (ctrl.dwControlType & MIXERCONTROL_CT_CLASS_MASK);
 
         /// <summary>
-        /// The type of the control. For example mute switch.
+        ///     The type of the control. For example mute switch.
         /// </summary>
-        public MixerControlType ControlType {
-            get { return (MixerControlType) ctrl.dwControlType; }
-        }
+        public MixerControlType ControlType => (MixerControlType) ctrl.dwControlType;
 
         /// <summary>
-        /// The flags of this control.
+        ///     The flags of this control.
         /// </summary>
-        public MixerControlFlags Flags {
-            get { return (MixerControlFlags) ctrl.fdwControl; }
-        }
+        public MixerControlFlags Flags => (MixerControlFlags) ctrl.fdwControl;
 
         /// <summary>
-        /// Whether this control is uniform. A uniform control controls
-        /// more than one channel, but can only set one value for all
-        /// channels.
+        ///     Whether this control is uniform. A uniform control controls
+        ///     more than one channel, but can only set one value for all
+        ///     channels.
         /// </summary>
-        public bool IsUniform {
-            get { return (Flags & MixerControlFlags.UNIFORM) != 0; }
-        }
+        public bool IsUniform => (Flags & MixerControlFlags.UNIFORM) != 0;
 
         /// <summary>
-        /// Whether this control has multiple values per channel. An
-        /// example for a multiple value control is a three-band equalizer.
+        ///     Whether this control has multiple values per channel. An
+        ///     example for a multiple value control is a three-band equalizer.
         /// </summary>
-        public bool IsMultiple {
-            get { return (Flags & MixerControlFlags.MULTIPLE) != 0; }
-        }
+        public bool IsMultiple => (Flags & MixerControlFlags.MULTIPLE) != 0;
 
         /// <summary>
-        /// The number of channels.
+        ///     The number of channels.
         /// </summary>
-        public int ChannelCount {
-            get { return ml.ChannelCount; }
-        }
+        public int ChannelCount => ml.ChannelCount;
 
         /// <summary>
-        /// The number of multiple values. For a three band equalizer,
-        /// this is 3. Will be always one if IsMultiple is false.
+        ///     The number of multiple values. For a three band equalizer,
+        ///     this is 3. Will be always one if IsMultiple is false.
         /// </summary>
-        public int MultipleValuesCount {
-            get { return IsMultiple ? ctrl.cMultipleItems : 1; }
-        }
+        public int MultipleValuesCount => IsMultiple ? ctrl.cMultipleItems : 1;
 
         /// <summary>
-        /// The number of raw values that have to be get or set. This
-        /// value is provided as a convenience; it can be computed from
-        /// MultipleValuesCount, IsUniform and ChannelCount.
+        ///     The number of raw values that have to be get or set. This
+        ///     value is provided as a convenience; it can be computed from
+        ///     MultipleValuesCount, IsUniform and ChannelCount.
         /// </summary>
         public int RawValueMultiplicity {
             get {
-                int val = MultipleValuesCount;
+                var val = MultipleValuesCount;
                 if (!IsUniform) {
                     val *= ChannelCount;
                 }
@@ -137,28 +116,24 @@ namespace ManagedWinapi.Audio.Mixer {
         }
 
         /// <summary>
-        /// The line this control belongs to.
+        ///     The line this control belongs to.
         /// </summary>
-        public MixerLine Line {
-            get { return ml; }
-        }
+        public MixerLine Line => ml;
 
         /// <summary>
-        /// The mixer this control belongs to.
+        ///     The mixer this control belongs to.
         /// </summary>
-        public Mixer Mixer {
-            get { return mx; }
-        }
+        public Mixer Mixer => mx;
 
         internal static MixerControl[] GetControls(Mixer mx, MixerLine line, int controlCount)
         {
             if (controlCount == 0) return new MixerControl[0];
-            MIXERCONTROL[] mc = new MIXERCONTROL[controlCount];
-            int mxsize = Marshal.SizeOf(mc[0]);
+            var mc = new MIXERCONTROL[controlCount];
+            var mxsize = Marshal.SizeOf(mc[0]);
             if (mxsize != 148) throw new Exception("" + mxsize);
             //mxsize = 148;
 
-            MIXERLINECONTROLS mlc = new MIXERLINECONTROLS();
+            var mlc = new MIXERLINECONTROLS();
             mlc.cbStruct = Marshal.SizeOf(mlc);
             mlc.cControls = controlCount;
             mlc.dwLineID = line.Id;
@@ -171,13 +146,13 @@ namespace ManagedWinapi.Audio.Mixer {
                 throw new Win32Exception("Error #" + err + " calling mixerGetLineControls()\n");
             }
 
-            for (int i = 0; i < controlCount; i++) {
+            for (var i = 0; i < controlCount; i++) {
                 mc[i] = (MIXERCONTROL) Marshal.PtrToStructure(new IntPtr(mlc.pamxctrl.ToInt64() + mxsize * i), typeof(MIXERCONTROL));
             }
 
             Marshal.FreeCoTaskMem(mlc.pamxctrl);
-            MixerControl[] result = new MixerControl[controlCount];
-            for (int i = 0; i < controlCount; i++) {
+            var result = new MixerControl[controlCount];
+            for (var i = 0; i < controlCount; i++) {
                 result[i] = GetControl(mx, line, mc[i]);
             }
 
@@ -186,7 +161,7 @@ namespace ManagedWinapi.Audio.Mixer {
 
         private static MixerControl GetControl(Mixer mx, MixerLine ml, MIXERCONTROL mc)
         {
-            MixerControl result = new MixerControl(mx, ml, mc);
+            var result = new MixerControl(mx, ml, mc);
             if (result.Class == MixerControlClass.FADER && ((uint) result.ControlType & MIXERCONTROL_CT_UNITS_MASK) == (uint) MixerControlType.MIXERCONTROL_CT_UNITS_UNSIGNED) {
                 result = new FaderMixerControl(mx, ml, mc);
             }
@@ -273,36 +248,32 @@ namespace ManagedWinapi.Audio.Mixer {
     }
 
     /// <summary>
-    /// A mixer control that is adjusted by a vertical fader, with a linear scale 
-    /// of positive values (ie, 0 is the lowest possible value).
+    ///     A mixer control that is adjusted by a vertical fader, with a linear scale
+    ///     of positive values (ie, 0 is the lowest possible value).
     /// </summary>
     public class FaderMixerControl : MixerControl {
-        internal FaderMixerControl(Mixer mx, MixerLine ml, MixerControl.MIXERCONTROL mc) : base(mx, ml, mc)
+        internal FaderMixerControl(Mixer mx, MixerLine ml, MIXERCONTROL mc) : base(mx, ml, mc)
         {
         }
 
         /// <summary>
-        /// The minimum value of this fader.
+        ///     The minimum value of this fader.
         /// </summary>
-        public int Minimum {
-            get { return ctrl.lMinimum; }
-        }
+        public int Minimum => ctrl.lMinimum;
 
         /// <summary>
-        /// The maximum value of this fader.
+        ///     The maximum value of this fader.
         /// </summary>
-        public int Maximum {
-            get { return ctrl.lMaximum; }
-        }
+        public int Maximum => ctrl.lMaximum;
 
         /// <summary>
-        /// Used to get or set the values of this fader.
+        ///     Used to get or set the values of this fader.
         /// </summary>
         public int[] Values {
             get {
-                int[] result = new int[RawValueMultiplicity];
-                MIXERCONTROLDETAILS mcd = new MIXERCONTROLDETAILS();
-                MIXERCONTROLDETAILS_UNSIGNED mcdu = new MIXERCONTROLDETAILS_UNSIGNED();
+                var result = new int[RawValueMultiplicity];
+                var mcd = new MIXERCONTROLDETAILS();
+                var mcdu = new MIXERCONTROLDETAILS_UNSIGNED();
                 mcd.cbStruct = Marshal.SizeOf(mcd);
                 mcd.dwControlID = ctrl.dwControlID;
                 mcd.cChannels = ChannelCount;
@@ -314,7 +285,7 @@ namespace ManagedWinapi.Audio.Mixer {
                     throw new Win32Exception("Error #" + err + " calling mixerGetControlDetails()");
                 }
 
-                for (int i = 0; i < result.Length; i++) {
+                for (var i = 0; i < result.Length; i++) {
                     mcdu = (MIXERCONTROLDETAILS_UNSIGNED) Marshal.PtrToStructure(new IntPtr(mcd.paDetails.ToInt64() + Marshal.SizeOf(mcdu) * i), typeof(MIXERCONTROLDETAILS_UNSIGNED));
                     result[i] = mcdu.dwValue;
                 }
@@ -325,15 +296,15 @@ namespace ManagedWinapi.Audio.Mixer {
                 if (value.Length != RawValueMultiplicity)
                     throw new ArgumentException("Incorrect dimension");
 
-                MIXERCONTROLDETAILS mcd = new MIXERCONTROLDETAILS();
-                MIXERCONTROLDETAILS_UNSIGNED mcdu = new MIXERCONTROLDETAILS_UNSIGNED();
+                var mcd = new MIXERCONTROLDETAILS();
+                var mcdu = new MIXERCONTROLDETAILS_UNSIGNED();
                 mcd.cbStruct = Marshal.SizeOf(mcd);
                 mcd.dwControlID = ctrl.dwControlID;
                 mcd.cChannels = ChannelCount;
                 mcd.cMultipleItems = ctrl.cMultipleItems;
                 mcd.paDetails = Marshal.AllocCoTaskMem(Marshal.SizeOf(mcdu) * value.Length);
                 mcd.cbDetails = Marshal.SizeOf(mcdu);
-                for (int i = 0; i < value.Length; i++) {
+                for (var i = 0; i < value.Length; i++) {
                     mcdu.dwValue = value[i];
                     Marshal.StructureToPtr(mcdu, new IntPtr(mcd.paDetails.ToInt64() + Marshal.SizeOf(mcdu) * i), false);
                 }
@@ -347,22 +318,22 @@ namespace ManagedWinapi.Audio.Mixer {
     }
 
     /// <summary>
-    /// A control that is has only two states (ie, values), 
-    /// and is therefore adjusted via a button.
+    ///     A control that is has only two states (ie, values),
+    ///     and is therefore adjusted via a button.
     /// </summary>
     public class BooleanMixerControl : MixerControl {
-        internal BooleanMixerControl(Mixer mx, MixerLine ml, MixerControl.MIXERCONTROL mc) : base(mx, ml, mc)
+        internal BooleanMixerControl(Mixer mx, MixerLine ml, MIXERCONTROL mc) : base(mx, ml, mc)
         {
         }
 
         /// <summary>
-        /// Used to get or set the values of this switch.
+        ///     Used to get or set the values of this switch.
         /// </summary>
         public bool[] Values {
             get {
-                bool[] result = new bool[RawValueMultiplicity];
-                MIXERCONTROLDETAILS mcd = new MIXERCONTROLDETAILS();
-                MIXERCONTROLDETAILS_BOOLEAN mcdb = new MIXERCONTROLDETAILS_BOOLEAN();
+                var result = new bool[RawValueMultiplicity];
+                var mcd = new MIXERCONTROLDETAILS();
+                var mcdb = new MIXERCONTROLDETAILS_BOOLEAN();
                 mcd.cbStruct = Marshal.SizeOf(mcd);
                 mcd.dwControlID = ctrl.dwControlID;
                 mcd.cChannels = ChannelCount;
@@ -374,7 +345,7 @@ namespace ManagedWinapi.Audio.Mixer {
                     throw new Win32Exception("Error #" + err + " calling mixerGetControlDetails()");
                 }
 
-                for (int i = 0; i < result.Length; i++) {
+                for (var i = 0; i < result.Length; i++) {
                     mcdb = (MIXERCONTROLDETAILS_BOOLEAN) Marshal.PtrToStructure(new IntPtr(mcd.paDetails.ToInt64() + Marshal.SizeOf(mcdb) * i), typeof(MIXERCONTROLDETAILS_BOOLEAN));
                     result[i] = mcdb.fValue != 0;
                 }
@@ -385,15 +356,15 @@ namespace ManagedWinapi.Audio.Mixer {
                 if (value.Length != RawValueMultiplicity)
                     throw new ArgumentException("Incorrect dimension");
 
-                MIXERCONTROLDETAILS mcd = new MIXERCONTROLDETAILS();
-                MIXERCONTROLDETAILS_BOOLEAN mcdb = new MIXERCONTROLDETAILS_BOOLEAN();
+                var mcd = new MIXERCONTROLDETAILS();
+                var mcdb = new MIXERCONTROLDETAILS_BOOLEAN();
                 mcd.cbStruct = Marshal.SizeOf(mcd);
                 mcd.dwControlID = ctrl.dwControlID;
                 mcd.cChannels = ChannelCount;
                 mcd.cMultipleItems = ctrl.cMultipleItems;
                 mcd.paDetails = Marshal.AllocCoTaskMem(Marshal.SizeOf(mcdb) * value.Length);
                 mcd.cbDetails = Marshal.SizeOf(mcdb);
-                for (int i = 0; i < value.Length; i++) {
+                for (var i = 0; i < value.Length; i++) {
                     mcdb.fValue = value[i] ? 1 : 0;
                     Marshal.StructureToPtr(mcdb, new IntPtr(mcd.paDetails.ToInt64() + Marshal.SizeOf(mcdb) * i), false);
                 }
@@ -407,88 +378,88 @@ namespace ManagedWinapi.Audio.Mixer {
     }
 
     /// <summary>
-    /// Mixer control type classes. These classes are roughly based upon what type of 
-    /// value a control adjusts, and therefore what kind of graphical user interface 
-    /// you would normally present to the enduser to let him adjust that control's value. 
-    /// The descriptions for these classes have been taken from 
-    /// http://www.borg.com/~jglatt/tech/mixer.htm.
+    ///     Mixer control type classes. These classes are roughly based upon what type of
+    ///     value a control adjusts, and therefore what kind of graphical user interface
+    ///     you would normally present to the enduser to let him adjust that control's value.
+    ///     The descriptions for these classes have been taken from
+    ///     http://www.borg.com/~jglatt/tech/mixer.htm.
     /// </summary>
     public enum MixerControlClass {
         /// <summary>
-        /// 	A custom class of control. If none of the others are applicable.
+        ///     A custom class of control. If none of the others are applicable.
         /// </summary>
         CUSTOM = 0x00000000,
 
         /// <summary>
-        /// A control that is adjusted by a graphical meter.
+        ///     A control that is adjusted by a graphical meter.
         /// </summary>
         METER = 0x10000000,
 
         /// <summary>
-        /// A control that is has only two states (ie, values), and is 
-        /// therefore adjusted via a button. 
+        ///     A control that is has only two states (ie, values), and is
+        ///     therefore adjusted via a button.
         /// </summary>
         SWITCH = 0x20000000,
 
         /// <summary>
-        /// A control that is adjusted by numeric entry.
+        ///     A control that is adjusted by numeric entry.
         /// </summary>
         NUMBER = 0x30000000,
 
         /// <summary>
-        /// A control that is adjusted by a horizontal slider 
-        /// with a linear scale of negative and positive values. 
-        /// (ie, Generally, 0 is the mid or "neutral" point).
+        ///     A control that is adjusted by a horizontal slider
+        ///     with a linear scale of negative and positive values.
+        ///     (ie, Generally, 0 is the mid or "neutral" point).
         /// </summary>
         SLIDER = 0x40000000,
 
         /// <summary>
-        /// A control that is adjusted by a vertical fader, with 
-        /// a linear scale of positive values (ie, 0 is the lowest 
-        /// possible value).
+        ///     A control that is adjusted by a vertical fader, with
+        ///     a linear scale of positive values (ie, 0 is the lowest
+        ///     possible value).
         /// </summary>
         FADER = 0x50000000,
 
         /// <summary>
-        /// A control that allows the user to enter a time value, such 
-        /// as Reverb Decay Time.
+        ///     A control that allows the user to enter a time value, such
+        ///     as Reverb Decay Time.
         /// </summary>
         TIME = 0x60000000,
 
         /// <summary>
-        /// A control that is adjusted by a listbox containing numerous 
-        /// "values" to be selected. The user will single-select, or perhaps 
-        /// multiple-select if desired, his choice of value(s).
+        ///     A control that is adjusted by a listbox containing numerous
+        ///     "values" to be selected. The user will single-select, or perhaps
+        ///     multiple-select if desired, his choice of value(s).
         /// </summary>
         LIST = 0x70000000
     }
 
     /// <summary>
-    /// Flags of a mixer control.
+    ///     Flags of a mixer control.
     /// </summary>
     [Flags]
     public enum MixerControlFlags {
         /// <summary>
-        /// This control has multiple channels, but only one value for
-        /// all of them.
+        ///     This control has multiple channels, but only one value for
+        ///     all of them.
         /// </summary>
         UNIFORM = 0x00000001,
 
         /// <summary>
-        /// This control has multiple values for one channel (like an equalizer).
+        ///     This control has multiple values for one channel (like an equalizer).
         /// </summary>
         MULTIPLE = 0x00000002,
 
         /// <summary>
-        /// This control is disabled.
+        ///     This control is disabled.
         /// </summary>
         DISABLED = unchecked((int) 0x80000000)
     }
 
     /// <summary>
-    /// The type of a mixer control.
-    /// You can find descriptions for most of these types on 
-    /// http://www.borg.com/~jglatt/tech/mixer.htm.
+    ///     The type of a mixer control.
+    ///     You can find descriptions for most of these types on
+    ///     http://www.borg.com/~jglatt/tech/mixer.htm.
     /// </summary>
     public enum MixerControlType {
         ///

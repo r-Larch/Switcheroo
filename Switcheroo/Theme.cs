@@ -1,6 +1,6 @@
-﻿using Switcheroo.Properties;
-using System;
+﻿using System;
 using System.Windows.Media;
+using Switcheroo.Properties;
 
 
 namespace Switcheroo {
@@ -8,11 +8,6 @@ namespace Switcheroo {
         private static SolidColorBrush Background;
         private static SolidColorBrush Foreground;
         private static MainWindow mainWindow;
-
-        private enum Mode {
-            Light,
-            Dark
-        }
 
         public static void SuscribeWindow(MainWindow main)
         {
@@ -46,6 +41,11 @@ namespace Switcheroo {
                     = mainWindow.Border.BorderBrush = Background;
 
             mainWindow.tb.Foreground = mainWindow.lb.Foreground = Foreground;
+        }
+
+        private enum Mode {
+            Light,
+            Dark
         }
     }
 }
