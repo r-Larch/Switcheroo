@@ -22,17 +22,14 @@ using System.Collections.Generic;
 using System.Linq;
 using frigo = FrigoTab;
 
-namespace Switcheroo.Core
-{
-    public class WindowFinder
-    {
 
+namespace Switcheroo.Core {
+    public class WindowFinder {
         public List<AppWindow> GetWindows()
         {
             var appWindows = new frigo::WindowFinder().Windows.ToList();
             var filtered = AppWindow.AllToplevelWindows
-                .Where(a =>
-                {
+                .Where(a => {
                     var match = appWindows.Find(h => h.handle == a.HWnd) != frigo.WindowHandle.Null;
                     return a.IsAltTabWindow() && match;
                 }).ToList();

@@ -7,15 +7,14 @@ using System.Text;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 
-namespace ManagedWinapi
-{
+
+namespace ManagedWinapi {
     /// <summary>
     /// A <see cref="TextBox" /> that can be used to select a keyboard shortcut.
     /// A context menu allows selecting keys that are not available directly
     /// by typing them.
     /// </summary>
-    public partial class ShortcutBox : TextBox
-    {
+    public partial class ShortcutBox : TextBox {
         private Keys key;
         private bool shift;
         private bool alt;
@@ -45,60 +44,69 @@ namespace ManagedWinapi
         /// The "non-modifier" key code of the currently selected shortcut, or
         /// <see cref="Keys.None"/> if no key is selected.
         /// </summary>
-        public Keys KeyCode
-        {
+        public Keys KeyCode {
             get { return key; }
-            set { key = value; RefreshText(); }
+            set {
+                key = value;
+                RefreshText();
+            }
         }
 
         /// <summary>
         /// Whether the currently selected shortcut includes the Shift key.
         /// </summary>
-        public bool Shift
-        {
+        public bool Shift {
             get { return shift; }
-            set { shift = value; shiftMenuItem.Checked = value; RefreshText(); }
+            set {
+                shift = value;
+                shiftMenuItem.Checked = value;
+                RefreshText();
+            }
         }
 
         /// <summary>
         /// Whether the currently selected shortcut includes the Alt key.
         /// </summary>
-        public bool Alt
-        {
+        public bool Alt {
             get { return alt; }
-            set { alt = value; altMenuItem.Checked = value; RefreshText(); }
+            set {
+                alt = value;
+                altMenuItem.Checked = value;
+                RefreshText();
+            }
         }
 
         /// <summary>
         /// Whether the currently selected shortcut includes the Control key.
         /// </summary>
-        public bool Ctrl
-        {
+        public bool Ctrl {
             get { return ctrl; }
-            set { ctrl = value; ctrlMenuItem.Checked = value; RefreshText(); }
+            set {
+                ctrl = value;
+                ctrlMenuItem.Checked = value;
+                RefreshText();
+            }
         }
 
         /// <summary>
         /// Whether the currently selected shortcut includes the Windows key.
         /// </summary>
-        public bool WindowsKey
-        {
+        public bool WindowsKey {
             get { return windowsKey; }
-            set { windowsKey = value; winMenuItem.Checked = value; RefreshText(); }
+            set {
+                windowsKey = value;
+                winMenuItem.Checked = value;
+                RefreshText();
+            }
         }
 
         /// <summary>
         /// The textual representation of the currently selected key.
         /// This property cannot be set.
         /// </summary>
-        public override string Text
-        {
-            get
-            {
-                return base.Text;
-            }
-            set
-            {
+        public override string Text {
+            get { return base.Text; }
+            set {
                 // ignore
             }
         }
@@ -106,21 +114,18 @@ namespace ManagedWinapi
         private void RefreshText()
         {
             string s;
-            if (key == Keys.None)
-            {
-                if (ctrl || alt || shift || windowsKey)
-                {
+            if (key == Keys.None) {
+                if (ctrl || alt || shift || windowsKey) {
                     s = "?";
                 }
-                else
-                {
+                else {
                     s = "None";
                 }
             }
-            else
-            {
+            else {
                 s = GetKeyName(key);
             }
+
             if (shift) s = GetKeyName(Keys.ShiftKey) + " + " + s;
             if (windowsKey) s = GetKeyName(Keys.LWin) + " + " + s;
             if (alt) s = GetKeyName(Keys.Menu) + " + " + s;
@@ -135,23 +140,23 @@ namespace ManagedWinapi
         }
 
         private bool currWindowsKey = false;
+
         private void ShortcutBox_KeyDown(object sender, KeyEventArgs e)
         {
             e.Handled = true;
-            if (!ReadOnly)
-            {
+            if (!ReadOnly) {
                 Shift = e.Shift;
                 Ctrl = e.Control;
                 Alt = e.Alt;
                 WindowsKey = currWindowsKey;
             }
-            if (e.KeyCode == Keys.RWin || e.KeyCode == Keys.LWin)
-            {
+
+            if (e.KeyCode == Keys.RWin || e.KeyCode == Keys.LWin) {
                 currWindowsKey = true;
             }
+
             if (ReadOnly) return;
-            switch (e.KeyCode)
-            {
+            switch (e.KeyCode) {
                 case Keys.ShiftKey:
                 case Keys.ControlKey:
                 case Keys.Menu:
@@ -163,20 +168,21 @@ namespace ManagedWinapi
                     key = e.KeyCode;
                     break;
             }
+
             RefreshText();
         }
 
         private void ShortcutBox_KeyUp(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.RWin || e.KeyCode == Keys.LWin)
-            {
+            if (e.KeyCode == Keys.RWin || e.KeyCode == Keys.LWin) {
                 currWindowsKey = false;
             }
-            if (key == Keys.None && !ReadOnly)
-            {
+
+            if (key == Keys.None && !ReadOnly) {
                 Shift = Ctrl = Alt = WindowsKey = false;
                 RefreshText();
             }
+
             e.Handled = true;
         }
 
@@ -187,47 +193,74 @@ namespace ManagedWinapi
 
         private void altMenuItem_Click(object sender, EventArgs e)
         {
-            if (!ReadOnly && key != Keys.None) { Alt = !altMenuItem.Checked; RefreshText(); }
+            if (!ReadOnly && key != Keys.None) {
+                Alt = !altMenuItem.Checked;
+                RefreshText();
+            }
         }
 
         private void ctrlMenuItem_Click(object sender, EventArgs e)
         {
-            if (!ReadOnly && key != Keys.None) { Ctrl = !ctrlMenuItem.Checked; RefreshText(); }
+            if (!ReadOnly && key != Keys.None) {
+                Ctrl = !ctrlMenuItem.Checked;
+                RefreshText();
+            }
         }
 
         private void shiftMenuItem_Click(object sender, EventArgs e)
         {
-            if (!ReadOnly && key != Keys.None) { Shift = !shiftMenuItem.Checked; RefreshText(); }
+            if (!ReadOnly && key != Keys.None) {
+                Shift = !shiftMenuItem.Checked;
+                RefreshText();
+            }
         }
 
         private void winMenuItem_Click(object sender, EventArgs e)
         {
-            if (!ReadOnly && key != Keys.None) { WindowsKey = !winMenuItem.Checked; RefreshText(); }
+            if (!ReadOnly && key != Keys.None) {
+                WindowsKey = !winMenuItem.Checked;
+                RefreshText();
+            }
         }
 
         private void escMenuItem_Click(object sender, EventArgs e)
         {
-            if (!ReadOnly) { key = Keys.Escape; RefreshText(); }
+            if (!ReadOnly) {
+                key = Keys.Escape;
+                RefreshText();
+            }
         }
 
         private void noneMenuItem_Click(object sender, EventArgs e)
         {
-            if (!ReadOnly) { key = Keys.None; RefreshText(); }
+            if (!ReadOnly) {
+                key = Keys.None;
+                RefreshText();
+            }
         }
 
         private void prtscMenuItem_Click(object sender, EventArgs e)
         {
-            if (!ReadOnly) { key = Keys.PrintScreen; RefreshText(); }
+            if (!ReadOnly) {
+                key = Keys.PrintScreen;
+                RefreshText();
+            }
         }
 
         private void returnMenuItem_Click(object sender, EventArgs e)
         {
-            if (!ReadOnly) { key = Keys.Return; RefreshText(); }
+            if (!ReadOnly) {
+                key = Keys.Return;
+                RefreshText();
+            }
         }
 
         private void tabMenuItem_Click(object sender, EventArgs e)
         {
-            if (!ReadOnly) { key = Keys.Tab; RefreshText(); }
+            if (!ReadOnly) {
+                key = Keys.Tab;
+                RefreshText();
+            }
         }
     }
 }

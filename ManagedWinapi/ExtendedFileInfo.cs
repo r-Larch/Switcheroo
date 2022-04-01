@@ -17,6 +17,7 @@
  * http://www.gnu.org/licenses/lgpl.html or write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -25,14 +26,13 @@ using System.Runtime.InteropServices;
 using System.IO;
 using System.ComponentModel;
 
-namespace ManagedWinapi
-{
+
+namespace ManagedWinapi {
     /// <summary>
     /// Provides methods for getting additional information about
     /// files, like icons or compressed file size.
     /// </summary>
-    public sealed class ExtendedFileInfo
-    {
+    public sealed class ExtendedFileInfo {
         /// <summary>
         /// Get the icon used for folders.
         /// </summary>
@@ -61,13 +61,11 @@ namespace ManagedWinapi
             string tmp = Path.GetTempFileName();
             File.Delete(tmp);
             string fn = tmp + "." + extension;
-            try
-            {
+            try {
                 File.Create(fn).Close();
                 return GetIconForFilename(fn, small);
             }
-            finally
-            {
+            finally {
                 File.Delete(fn);
             }
         }
@@ -81,24 +79,22 @@ namespace ManagedWinapi
         {
             SHFILEINFO shinfo = new SHFILEINFO();
 
-            if (small)
-            {
+            if (small) {
                 IntPtr hImgSmall = SHGetFileInfo(fileName, 0, ref shinfo,
-                                   (uint)Marshal.SizeOf(shinfo),
-                                    SHGFI_ICON |
-                                    SHGFI_SMALLICON);
+                    (uint) Marshal.SizeOf(shinfo),
+                    SHGFI_ICON |
+                    SHGFI_SMALLICON);
             }
-            else
-            {
+            else {
                 IntPtr hImgLarge = SHGetFileInfo(fileName, 0,
-                ref shinfo, (uint)Marshal.SizeOf(shinfo),
-                SHGFI_ICON | SHGFI_LARGEICON);
+                    ref shinfo, (uint) Marshal.SizeOf(shinfo),
+                    SHGFI_ICON | SHGFI_LARGEICON);
             }
 
             if (shinfo.hIcon == IntPtr.Zero) return null;
 
             System.Drawing.Icon myIcon =
-                   System.Drawing.Icon.FromHandle(shinfo.hIcon);
+                System.Drawing.Icon.FromHandle(shinfo.hIcon);
             return myIcon;
         }
 
@@ -112,14 +108,14 @@ namespace ManagedWinapi
             uint low;
             low = GetCompressedFileSize(filename, out high);
             int error = Marshal.GetLastWin32Error();
-            if (error == 32)
-            {
-                return (ulong)new FileInfo(filename).Length;
+            if (error == 32) {
+                return (ulong) new FileInfo(filename).Length;
             }
+
             if (high == 0 && low == 0xFFFFFFFF && error != 0)
                 throw new Win32Exception(error);
             else
-                return ((ulong)high << 32) + low;
+                return ((ulong) high << 32) + low;
         }
 
         /// <summary>
@@ -130,48 +126,46 @@ namespace ManagedWinapi
             uint sectors, bytes, dummy;
             string drive = Path.GetPathRoot(filename);
             if (!GetDiskFreeSpace(drive, out sectors, out bytes,
-                    out dummy, out dummy))
-            {
+                    out dummy, out dummy)) {
                 throw new Win32Exception(Marshal.GetLastWin32Error());
             }
+
             return sectors * bytes;
         }
 
         #region PInvoke Declarations
 
         private const uint SHGFI_ICON = 0x100;
-        private const uint SHGFI_LARGEICON = 0x0;    // 'Large icon
-        private const uint SHGFI_SMALLICON = 0x1;    // 'Small icon
+        private const uint SHGFI_LARGEICON = 0x0; // 'Large icon
+        private const uint SHGFI_SMALLICON = 0x1; // 'Small icon
 
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         static extern bool GetDiskFreeSpace(string lpRootPathName,
-           out uint lpSectorsPerCluster,
-           out uint lpBytesPerSector,
-           out uint lpNumberOfFreeClusters,
-           out uint lpTotalNumberOfClusters);
+            out uint lpSectorsPerCluster,
+            out uint lpBytesPerSector,
+            out uint lpNumberOfFreeClusters,
+            out uint lpTotalNumberOfClusters);
 
         [DllImport("kernel32.dll")]
         private static extern uint GetCompressedFileSize(string lpFileName,
-           out uint lpFileSizeHigh);
+            out uint lpFileSizeHigh);
 
         [DllImport("shell32.dll")]
         private static extern IntPtr SHGetFileInfo(string pszPath,
-                                    uint dwFileAttributes,
-                                    ref SHFILEINFO psfi,
-                                    uint cbSizeFileInfo,
-                                    uint uFlags);
+            uint dwFileAttributes,
+            ref SHFILEINFO psfi,
+            uint cbSizeFileInfo,
+            uint uFlags);
 
         [StructLayout(LayoutKind.Sequential)]
-        private struct SHFILEINFO
-        {
+        private struct SHFILEINFO {
             public IntPtr hIcon;
             public IntPtr iIcon;
             public uint dwAttributes;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
-            public string szDisplayName;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 80)]
-            public string szTypeName;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)] public string szDisplayName;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 80)] public string szTypeName;
         };
+
         #endregion
     }
 }

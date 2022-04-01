@@ -17,13 +17,13 @@
                         Executed="ScrollListUp" />
         <CommandBinding Command="local:MainWindow.ScrollListDownCommand"
                         Executed="ScrollListDown" />
-        <CommandBinding Command="local:MainWindow.ScrollListPageUpCommand" 
+        <CommandBinding Command="local:MainWindow.ScrollListPageUpCommand"
                         Executed="ScrollListPageUp" />
-        <CommandBinding Command="local:MainWindow.ScrollListPageDownCommand" 
+        <CommandBinding Command="local:MainWindow.ScrollListPageDownCommand"
                         Executed="ScrollListPageDown" />
-        <CommandBinding Command="local:MainWindow.ScrollListHomeCommand" 
+        <CommandBinding Command="local:MainWindow.ScrollListHomeCommand"
                         Executed="ScrollListHome" />
-        <CommandBinding Command="local:MainWindow.ScrollListEndCommand" 
+        <CommandBinding Command="local:MainWindow.ScrollListEndCommand"
                         Executed="ScrollListEnd" />
     </Window.CommandBindings>
 
@@ -78,7 +78,7 @@
                     </TextBlock>
                 </StackPanel>
             </DockPanel>
-           <Grid Name="SearchGrid" DockPanel.Dock="Top">
+            <Grid Name="SearchGrid" DockPanel.Dock="Top">
                 <TextBox Name="tb" Padding="5" VerticalAlignment="Top" TextChanged="TextChanged" FontSize="15"
                          VerticalContentAlignment="Center" BorderBrush="{x:Null}">
                     <TextBox.InputBindings>
@@ -214,14 +214,14 @@
                         <EventSetter Event="MouseLeftButtonUp" Handler="ListBoxItem_MouseLBClick" />
                     </Style>
                 </ListBox.ItemContainerStyle>
-              <ListBox.ContextMenu>
-                <ContextMenu>
-                  <MenuItem Header="Close" Click="MenuItem_Click_toClose"/>
-                  <MenuItem Header="Bring to Front" Click="MenuItem_Click_toFront"/>
-                  <MenuItem Header="Run Another Instance" Click="MenuItem_Duplicate"/>
-                </ContextMenu>
-              </ListBox.ContextMenu>
-              <!-- Changes inactive selection color to be same as selected -->
+                <ListBox.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Close" Click="MenuItem_Click_toClose" />
+                        <MenuItem Header="Bring to Front" Click="MenuItem_Click_toFront" />
+                        <MenuItem Header="Run Another Instance" Click="MenuItem_Duplicate" />
+                    </ContextMenu>
+                </ListBox.ContextMenu>
+                <!-- Changes inactive selection color to be same as selected -->
                 <ListBox.Resources>
                     <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}"
                                      Color="{x:Static SystemColors.HighlightColor}" Opacity=".4" />

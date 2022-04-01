@@ -17,6 +17,7 @@
  * http://www.gnu.org/licenses/lgpl.html or write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -24,14 +25,13 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.ComponentModel;
 
-namespace ManagedWinapi
-{
+
+namespace ManagedWinapi {
     /// <summary>
     /// A chunk in another processes memory. Mostly used to allocate buffers
     /// in another process for sending messages to its windows.
     /// </summary>
-    public class ProcessMemoryChunk : IDisposable
-    {
+    public class ProcessMemoryChunk : IDisposable {
         readonly Process process;
         readonly IntPtr location, hProcess;
         readonly int size;
@@ -63,17 +63,23 @@ namespace ManagedWinapi
         /// <summary>
         /// The process this chunk refers to.
         /// </summary>
-        public Process Process { get { return process; } }
+        public Process Process {
+            get { return process; }
+        }
 
         /// <summary>
         /// The location in memory (of the other process) this chunk refers to.
         /// </summary>
-        public IntPtr Location { get { return location; } }
+        public IntPtr Location {
+            get { return location; }
+        }
 
         /// <summary>
         /// The size of the chunk.
         /// </summary>
-        public int Size { get { return size; } }
+        public int Size {
+            get { return size; }
+        }
 
         /// <summary>
         /// Allocate a chunk in another process.
@@ -81,7 +87,7 @@ namespace ManagedWinapi
         public static ProcessMemoryChunk Alloc(Process process, int size)
         {
             IntPtr hProcess = OpenProcess(ProcessAccessFlags.VMOperation | ProcessAccessFlags.VMRead | ProcessAccessFlags.VMWrite, false, process.Id);
-            IntPtr remotePointer = VirtualAllocEx(hProcess, IntPtr.Zero, (uint)size,
+            IntPtr remotePointer = VirtualAllocEx(hProcess, IntPtr.Zero, (uint) size,
                 MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
             ApiHelper.FailIfZero(remotePointer);
             return new ProcessMemoryChunk(process, hProcess, remotePointer, size, true);
@@ -104,11 +110,11 @@ namespace ManagedWinapi
         /// </summary>
         public void Dispose()
         {
-            if (free)
-            {
+            if (free) {
                 if (!VirtualFreeEx(hProcess, location, UIntPtr.Zero, MEM_RELEASE))
                     throw new Win32Exception(Marshal.GetLastWin32Error());
             }
+
             CloseHandle(hProcess);
         }
 
@@ -119,13 +125,11 @@ namespace ManagedWinapi
         {
             int size = Marshal.SizeOf(structure);
             IntPtr localPtr = Marshal.AllocHGlobal(size);
-            try
-            {
+            try {
                 Marshal.StructureToPtr(structure, localPtr, false);
                 Write(offset, localPtr, size);
             }
-            finally
-            {
+            finally {
                 Marshal.FreeHGlobal(localPtr);
             }
         }
@@ -137,7 +141,7 @@ namespace ManagedWinapi
         {
             if (offset < 0) throw new ArgumentException("Offset may not be negative", "offset");
             if (offset + length > size) throw new ArgumentException("Exceeding chunk size");
-            WriteProcessMemory(hProcess, new IntPtr(location.ToInt64() + offset), ptr, new UIntPtr((uint)length), IntPtr.Zero);
+            WriteProcessMemory(hProcess, new IntPtr(location.ToInt64() + offset), ptr, new UIntPtr((uint) length), IntPtr.Zero);
         }
 
         /// <summary>
@@ -147,14 +151,17 @@ namespace ManagedWinapi
         {
             if (offset < 0) throw new ArgumentException("Offset may not be negative", "offset");
             if (offset + ptr.Length > size) throw new ArgumentException("Exceeding chunk size");
-            WriteProcessMemory(hProcess, new IntPtr(location.ToInt64() + offset), ptr, new UIntPtr((uint)ptr.Length), IntPtr.Zero);
+            WriteProcessMemory(hProcess, new IntPtr(location.ToInt64() + offset), ptr, new UIntPtr((uint) ptr.Length), IntPtr.Zero);
         }
 
         /// <summary>
         /// Read this chunk.
         /// </summary>
         /// <returns></returns>
-        public byte[] Read() { return Read(0, size); }
+        public byte[] Read()
+        {
+            return Read(0, size);
+        }
 
         /// <summary>
         /// Read a part of this chunk.
@@ -163,7 +170,7 @@ namespace ManagedWinapi
         {
             if (offset + length > size) throw new ArgumentException("Exceeding chunk size");
             byte[] result = new byte[length];
-            ReadProcessMemory(hProcess, new IntPtr(location.ToInt64() + offset), result, new UIntPtr((uint)length), IntPtr.Zero);
+            ReadProcessMemory(hProcess, new IntPtr(location.ToInt64() + offset), result, new UIntPtr((uint) length), IntPtr.Zero);
             return result;
         }
 
@@ -181,7 +188,7 @@ namespace ManagedWinapi
         public void ReadToPtr(int offset, int length, IntPtr ptr)
         {
             if (offset + length > size) throw new ArgumentException("Exceeding chunk size");
-            ReadProcessMemory(hProcess, new IntPtr(location.ToInt64() + offset), ptr, new UIntPtr((uint)length), IntPtr.Zero);
+            ReadProcessMemory(hProcess, new IntPtr(location.ToInt64() + offset), ptr, new UIntPtr((uint) length), IntPtr.Zero);
         }
 
         /// <summary>
@@ -191,13 +198,11 @@ namespace ManagedWinapi
         {
             int size = Marshal.SizeOf(structureType);
             IntPtr localPtr = Marshal.AllocHGlobal(size);
-            try
-            {
+            try {
                 ReadToPtr(offset, size, localPtr);
                 return Marshal.PtrToStructure(localPtr, structureType);
             }
-            finally
-            {
+            finally {
                 Marshal.FreeHGlobal(localPtr);
             }
         }
@@ -210,39 +215,40 @@ namespace ManagedWinapi
 
         [DllImport("kernel32.dll")]
         private static extern IntPtr OpenProcess(ProcessAccessFlags dwDesiredAccess, bool bInheritHandle,
-           int dwProcessId);
+            int dwProcessId);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern int CloseHandle(IntPtr hObject);
 
-        private static readonly uint MEM_COMMIT = 0x1000, MEM_RESERVE = 0x2000,
-            MEM_RELEASE = 0x8000, PAGE_READWRITE = 0x04;
+        private static readonly uint MEM_COMMIT = 0x1000,
+            MEM_RESERVE = 0x2000,
+            MEM_RELEASE = 0x8000,
+            PAGE_READWRITE = 0x04;
 
         [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
         private static extern bool VirtualFreeEx(IntPtr hProcess, IntPtr lpAddress,
-           UIntPtr dwSize, uint dwFreeType);
+            UIntPtr dwSize, uint dwFreeType);
 
         [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
         private static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress,
-           [Out] byte[] lpBuffer, UIntPtr nSize, IntPtr lpNumberOfBytesRead);
+            [Out] byte[] lpBuffer, UIntPtr nSize, IntPtr lpNumberOfBytesRead);
 
         [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
         private static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress,
-           IntPtr lpBuffer, UIntPtr nSize, IntPtr lpNumberOfBytesRead);
+            IntPtr lpBuffer, UIntPtr nSize, IntPtr lpNumberOfBytesRead);
 
         [DllImport("kernel32.dll")]
         private static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress,
-           byte[] lpBuffer, UIntPtr nSize, IntPtr lpNumberOfBytesWritten);
+            byte[] lpBuffer, UIntPtr nSize, IntPtr lpNumberOfBytesWritten);
 
         [DllImport("kernel32.dll")]
         private static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress,
-           IntPtr lpBuffer, UIntPtr nSize, IntPtr lpNumberOfBytesWritten);
+            IntPtr lpBuffer, UIntPtr nSize, IntPtr lpNumberOfBytesWritten);
 
         #endregion
     }
 
-    internal enum ProcessAccessFlags : int
-    {
+    internal enum ProcessAccessFlags : int {
         All = 0x001F0FFF,
         Terminate = 0x00000001,
         CreateThread = 0x00000002,

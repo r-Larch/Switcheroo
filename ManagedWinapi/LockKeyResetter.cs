@@ -17,14 +17,15 @@
  * http://www.gnu.org/licenses/lgpl.html or write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 
-namespace ManagedWinapi
-{
+
+namespace ManagedWinapi {
     /// <summary>
     /// Utility class that can be used to create key events with all current 
     /// locking keys (like Caps Lock) disabled. Other modifier keys (like Ctrl or Shift)
@@ -37,9 +38,8 @@ namespace ManagedWinapi
     /// }
     /// </code>
     /// </example>
-    public class LockKeyResetter :IDisposable
-    {
-        static readonly Keys[] MODIFIER_KEYS = { 
+    public class LockKeyResetter : IDisposable {
+        static readonly Keys[] MODIFIER_KEYS = {
             Keys.RShiftKey, Keys.LShiftKey, Keys.ShiftKey,
             Keys.RMenu, Keys.LMenu, Keys.Menu,
             Keys.RControlKey, Keys.LControlKey, Keys.LMenu,
@@ -55,32 +55,29 @@ namespace ManagedWinapi
         /// </summary>
         public LockKeyResetter()
         {
-            for (int i = 0; i < MODIFIER_KEYS.Length; i++)
-            {
+            for (int i = 0; i < MODIFIER_KEYS.Length; i++) {
                 KeyboardKey k = new KeyboardKey(MODIFIER_KEYS[i]);
                 short dummy = k.AsyncState; // reset remembered status
-                if (k.AsyncState != 0)
-                {
+                if (k.AsyncState != 0) {
                     simpleModifiers[i] = true;
                     k.Release();
                 }
             }
+
             KeyboardKey capslockKey = new KeyboardKey(Keys.CapsLock);
             int capslockstate = capslockKey.State;
             capslock = ((capslockstate & 0x01) == 0x01);
-            if (capslock)
-            {
+            if (capslock) {
                 // press caps lock
                 capslockKey.PressAndRelease();
                 Application.DoEvents();
-                if ((capslockKey.State & 0x01) == 0x01)
-                {
+                if ((capslockKey.State & 0x01) == 0x01) {
                     // press shift
                     new KeyboardKey(Keys.ShiftKey).PressAndRelease();
                 }
+
                 Application.DoEvents();
-                if ((capslockKey.State & 0x01) == 0x01)
-                {
+                if ((capslockKey.State & 0x01) == 0x01) {
                     throw new Exception("Cannot disable caps lock.");
                 }
             }
@@ -101,10 +98,9 @@ namespace ManagedWinapi
                 if ((capslockKey.State & 0x01) != 0x01)
                     throw new Exception("Cannot enable caps lock.");
             }
-            for (int i = MODIFIER_KEYS.Length-1; i >= 0; i--)
-            {
-                if (simpleModifiers[i])
-                {
+
+            for (int i = MODIFIER_KEYS.Length - 1; i >= 0; i--) {
+                if (simpleModifiers[i]) {
                     new KeyboardKey(MODIFIER_KEYS[i]).Press();
                 }
             }
@@ -116,8 +112,7 @@ namespace ManagedWinapi
         /// <param name="keys">The keys to send</param>
         public static void Send(String keys)
         {
-            using (new LockKeyResetter())
-            {
+            using (new LockKeyResetter()) {
                 SendKeys.Send(keys);
             }
         }
@@ -129,8 +124,7 @@ namespace ManagedWinapi
         /// <param name="keys"></param>
         public static void SendWait(String keys)
         {
-            using (new LockKeyResetter())
-            {
+            using (new LockKeyResetter()) {
                 SendKeys.SendWait(keys);
             }
         }

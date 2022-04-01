@@ -1,24 +1,19 @@
-﻿namespace Switcheroo.Core.Matchers
-{
-    public class StartsWithMatcher : IMatcher
-    {
+﻿namespace Switcheroo.Core.Matchers {
+    public class StartsWithMatcher : IMatcher {
         public MatchResult Evaluate(string input, string pattern)
         {
             var matchResult = new MatchResult();
 
-            if (input == null)
-            {
+            if (input == null) {
                 return matchResult;
             }
 
-            if (pattern == null)
-            {
+            if (pattern == null) {
                 matchResult.StringParts.Add(new StringPart(input));
                 return matchResult;
             }
 
-            if (!InputStartsWithPattern(input, pattern))
-            {
+            if (!InputStartsWithPattern(input, pattern)) {
                 matchResult.StringParts.Add(new StringPart(input));
                 return matchResult;
             }

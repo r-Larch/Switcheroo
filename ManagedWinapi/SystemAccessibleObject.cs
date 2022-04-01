@@ -17,6 +17,7 @@
  * http://www.gnu.org/licenses/lgpl.html or write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -26,16 +27,15 @@ using System.Runtime.InteropServices;
 using System.Drawing;
 using System.Runtime.InteropServices.ComTypes;
 
-namespace ManagedWinapi.Accessibility
-{
+
+namespace ManagedWinapi.Accessibility {
     /// <summary>
     /// Provides access to the Active Accessibility API. Every <see cref="SystemWindow"/>
     /// has one ore more AccessibleObjects attached that provide information about the
     /// window to visually impaired people. This information is mainly used by screen 
     /// readers and other accessibility software..
     /// </summary>
-    public class SystemAccessibleObject
-    {
+    public class SystemAccessibleObject {
         private IAccessible iacc;
         private int childID;
 
@@ -43,12 +43,16 @@ namespace ManagedWinapi.Accessibility
         /// The IAccessible instance of this object (if <see cref="ChildID"/> is zero)
         /// or its parent.
         /// </summary>
-        public IAccessible IAccessible { get { return iacc; } }
+        public IAccessible IAccessible {
+            get { return iacc; }
+        }
 
         /// <summary>
         /// The underlying child ID
         /// </summary>
-        public int ChildID { get { return childID; } }
+        public int ChildID {
+            get { return childID; }
+        }
 
         /// <summary>
         /// Create an accessible object from an IAccessible instance and a child ID.
@@ -57,19 +61,18 @@ namespace ManagedWinapi.Accessibility
         {
             if (iacc == null) throw new ArgumentNullException();
             //if (childID < 0) throw new ArgumentException();
-            if (childID != 0)
-            {
-                try
-                {
+            if (childID != 0) {
+                try {
                     object realChild = iacc.get_accChild(childID);
-                    if (realChild != null)
-                    {
-                        iacc = (IAccessible)realChild;
+                    if (realChild != null) {
+                        iacc = (IAccessible) realChild;
                         childID = 0;
                     }
                 }
-                catch (ArgumentException) { }
+                catch (ArgumentException) {
+                }
             }
+
             this.iacc = iacc;
             this.childID = childID;
         }
@@ -83,7 +86,7 @@ namespace ManagedWinapi.Accessibility
             object ci;
             IntPtr result = AccessibleObjectFromPoint(new ManagedWinapi.Windows.POINT(x, y), out iacc, out ci);
             if (result != IntPtr.Zero) throw new Exception("AccessibleObjectFromPoint returned " + result.ToInt32());
-            return new SystemAccessibleObject(iacc, (int)(ci ?? 0));
+            return new SystemAccessibleObject(iacc, (int) (ci ?? 0));
         }
 
         /// <summary>
@@ -94,35 +97,27 @@ namespace ManagedWinapi.Accessibility
         /// <returns></returns>
         public static SystemAccessibleObject FromWindow(SystemWindow window, AccessibleObjectID objectID)
         {
-            IAccessible iacc = (IAccessible)AccessibleObjectFromWindow(window == null ? IntPtr.Zero : window.HWnd, (uint)objectID, new Guid("{618736E0-3C3D-11CF-810C-00AA00389B71}"));
+            IAccessible iacc = (IAccessible) AccessibleObjectFromWindow(window == null ? IntPtr.Zero : window.HWnd, (uint) objectID, new Guid("{618736E0-3C3D-11CF-810C-00AA00389B71}"));
             return new SystemAccessibleObject(iacc, 0);
         }
 
         /// <summary>
         /// Gets an accessibility object for the mouse cursor.
         /// </summary>
-        public static SystemAccessibleObject MouseCursor
-        {
-            get
-            {
-                return FromWindow(null, AccessibleObjectID.OBJID_CURSOR);
-            }
+        public static SystemAccessibleObject MouseCursor {
+            get { return FromWindow(null, AccessibleObjectID.OBJID_CURSOR); }
         }
 
         /// <summary>
         /// Gets an accessibility object for the input caret, or
         /// <b>null</b> if there is none.
         /// </summary>
-        public static SystemAccessibleObject Caret
-        {
-            get
-            {
-                try
-                {
+        public static SystemAccessibleObject Caret {
+            get {
+                try {
                     return FromWindow(null, AccessibleObjectID.OBJID_CARET);
                 }
-                catch (COMException)
-                {
+                catch (COMException) {
                     return null;
                 }
             }
@@ -134,7 +129,7 @@ namespace ManagedWinapi.Accessibility
         public static string RoleToString(int roleNumber)
         {
             StringBuilder sb = new StringBuilder(1024);
-            uint result = GetRoleText((uint)roleNumber, sb, 1024);
+            uint result = GetRoleText((uint) roleNumber, sb, 1024);
             if (result == 0) throw new Exception("Invalid role number");
             return sb.ToString();
         }
@@ -159,7 +154,7 @@ namespace ManagedWinapi.Accessibility
         public static string StateBitToString(int stateBit)
         {
             StringBuilder sb = new StringBuilder(1024);
-            uint result = GetStateText((uint)stateBit, sb, 1024);
+            uint result = GetStateText((uint) stateBit, sb, 1024);
             if (result == 0) throw new Exception("Invalid role number");
             return sb.ToString();
         }
@@ -167,52 +162,36 @@ namespace ManagedWinapi.Accessibility
         /// <summary>
         /// The description of this accessible object.
         /// </summary>
-        public string Description
-        {
-            get
-            {
-                return iacc.get_accDescription(childID);
-            }
+        public string Description {
+            get { return iacc.get_accDescription(childID); }
         }
 
         /// <summary>
         /// The name of this accessible object.
         /// </summary>
-        public string Name
-        {
-            get
-            {
-                return iacc.get_accName(childID);
-            }
+        public string Name {
+            get { return iacc.get_accName(childID); }
         }
 
         /// <summary>
         /// The role of this accessible object. This can either be an int
         /// (for a predefined role) or a string.
         /// </summary>
-        public object Role
-        {
-            get
-            {
-                return iacc.get_accRole(childID);
-            }
+        public object Role {
+            get { return iacc.get_accRole(childID); }
         }
 
         /// <summary>
         /// The role of this accessible object, as an integer. If this role
         /// is not predefined, -1 is returned.
         /// </summary>
-        public int RoleIndex
-        {
-            get
-            {
+        public int RoleIndex {
+            get {
                 object role = Role;
-                if (role is int)
-                {
-                    return (int)role;
+                if (role is int) {
+                    return (int) role;
                 }
-                else
-                {
+                else {
                     return -1;
                 }
             }
@@ -221,21 +200,16 @@ namespace ManagedWinapi.Accessibility
         /// <summary>
         /// The role of this accessible object, as a localized string.
         /// </summary>
-        public string RoleString
-        {
-            get
-            {
+        public string RoleString {
+            get {
                 object role = Role;
-                if (role is int)
-                {
-                    return RoleToString((int)role);
+                if (role is int) {
+                    return RoleToString((int) role);
                 }
-                else if (role is string)
-                {
-                    return (string)role;
+                else if (role is string) {
+                    return (string) role;
                 }
-                else
-                {
+                else {
                     return role.ToString();
                 }
             }
@@ -246,70 +220,49 @@ namespace ManagedWinapi.Accessibility
         /// is the smallest rectangle that includes the whole object, but not
         /// every point in the rectangle must be part of the object.
         /// </summary>
-        public Rectangle Location
-        {
-            get
-            {
+        public Rectangle Location {
+            get {
                 int x, y, w, h;
                 iacc.accLocation(out x, out y, out w, out h, childID);
                 return new Rectangle(x, y, w, h);
-
             }
         }
 
         /// <summary>
         /// The value of this accessible object.
         /// </summary>
-        public string Value
-        {
-            get
-            {
-                return iacc.get_accValue(childID);
-            }
+        public string Value {
+            get { return iacc.get_accValue(childID); }
         }
 
         /// <summary>
         /// The state of this accessible object.
         /// </summary>
-        public int State
-        {
-            get
-            {
-                return (int)iacc.get_accState(childID);
-            }
+        public int State {
+            get { return (int) iacc.get_accState(childID); }
         }
 
         /// <summary>
         /// A string representation of the state of this accessible object.
         /// </summary>
-        public string StateString
-        {
-            get
-            {
-                return StateToString(State);
-            }
+        public string StateString {
+            get { return StateToString(State); }
         }
 
         /// <summary>
         /// Whether this accessibile object is visible.
         /// </summary>
-        public bool Visible
-        {
-            get
-            {
-                return (State & 0x8000) == 0;
-            }
+        public bool Visible {
+            get { return (State & 0x8000) == 0; }
         }
 
         /// <summary>
         /// The parent of this accessible object, or <b>null</b> if none exists.
         /// </summary>
-        public SystemAccessibleObject Parent
-        {
-            get
-            {
+        public SystemAccessibleObject Parent {
+            get {
                 if (childID != 0) return new SystemAccessibleObject(iacc, 0);
-                IAccessible p = (IAccessible)iacc.accParent;
+                IAccessible p = (IAccessible) iacc.accParent;
                 if (p == null) return null;
                 return new SystemAccessibleObject(p, 0);
             }
@@ -318,17 +271,20 @@ namespace ManagedWinapi.Accessibility
         /// <summary>
         /// The keyboard shortcut of this accessible object.
         /// </summary>
-        public string KeyboardShortcut
-        {
-            get
-            {
-                try
-                {
+        public string KeyboardShortcut {
+            get {
+                try {
                     return iacc.get_accKeyboardShortcut(childID);
                 }
-                catch (ArgumentException) { return ""; }
-                catch (NotImplementedException) { return ""; }
-                catch (COMException) { return null; }
+                catch (ArgumentException) {
+                    return "";
+                }
+                catch (NotImplementedException) {
+                    return "";
+                }
+                catch (COMException) {
+                    return null;
+                }
             }
         }
 
@@ -336,15 +292,14 @@ namespace ManagedWinapi.Accessibility
         /// A string describing the default action of this accessible object.
         /// For a button, this might be "Press".
         /// </summary>
-        public string DefaultAction
-        {
-            get
-            {
-                try
-                {
+        public string DefaultAction {
+            get {
+                try {
                     return iacc.get_accDefaultAction(childID);
                 }
-                catch (COMException) { return null; }
+                catch (COMException) {
+                    return null;
+                }
             }
         }
 
@@ -359,44 +314,38 @@ namespace ManagedWinapi.Accessibility
         /// <summary>
         /// Get all objects of this accessible object that are selected.
         /// </summary>
-        public SystemAccessibleObject[] SelectedObjects
-        {
-            get
-            {
+        public SystemAccessibleObject[] SelectedObjects {
+            get {
                 if (childID != 0) return new SystemAccessibleObject[0];
                 object sel;
-                try
-                {
+                try {
                     sel = iacc.accSelection;
                 }
-                catch (NotImplementedException)
-                {
+                catch (NotImplementedException) {
                     return new SystemAccessibleObject[0];
                 }
-                catch (COMException)
-                {
+                catch (COMException) {
                     return new SystemAccessibleObject[0];
                 }
+
                 if (sel == null) return new SystemAccessibleObject[0];
-                if (sel is IEnumVARIANT)
-                {
-                    IEnumVARIANT e = (IEnumVARIANT)sel;
+                if (sel is IEnumVARIANT) {
+                    IEnumVARIANT e = (IEnumVARIANT) sel;
                     e.Reset();
                     List<SystemAccessibleObject> retval = new List<SystemAccessibleObject>();
                     object[] tmp = new object[1];
-                    while (e.Next(1, tmp, IntPtr.Zero) == 0)
-                    {
-                        if (tmp[0] is int && (int)tmp[0] < 0) break;
+                    while (e.Next(1, tmp, IntPtr.Zero) == 0) {
+                        if (tmp[0] is int && (int) tmp[0] < 0) break;
                         retval.Add(ObjectToSAO(tmp[0]));
                     }
+
                     return retval.ToArray();
                 }
-                else
-                {
-                    if (sel is int && (int)sel < 0)
-                    {
+                else {
+                    if (sel is int && (int) sel < 0) {
                         return new SystemAccessibleObject[0];
                     }
+
                     return new SystemAccessibleObject[] { ObjectToSAO(sel) };
                 }
             }
@@ -404,23 +353,19 @@ namespace ManagedWinapi.Accessibility
 
         private SystemAccessibleObject ObjectToSAO(object obj)
         {
-            if (obj is int)
-            {
-                return new SystemAccessibleObject(iacc, (int)obj);
+            if (obj is int) {
+                return new SystemAccessibleObject(iacc, (int) obj);
             }
-            else
-            {
-                return new SystemAccessibleObject((IAccessible)obj, 0);
+            else {
+                return new SystemAccessibleObject((IAccessible) obj, 0);
             }
         }
 
         /// <summary>
         /// Get the SystemWindow that owns this accessible object.
         /// </summary>
-        public SystemWindow Window
-        {
-            get
-            {
+        public SystemWindow Window {
+            get {
                 IntPtr hwnd;
                 WindowFromAccessibleObject(iacc, out hwnd);
                 return new SystemWindow(hwnd);
@@ -430,10 +375,8 @@ namespace ManagedWinapi.Accessibility
         /// <summary>
         /// Get all child accessible objects.
         /// </summary>
-        public SystemAccessibleObject[] Children
-        {
-            get
-            {
+        public SystemAccessibleObject[] Children {
+            get {
                 // ID-referenced objects cannot have children
                 if (childID != 0) return new SystemAccessibleObject[0];
 
@@ -443,20 +386,19 @@ namespace ManagedWinapi.Accessibility
                 uint result = AccessibleChildren(iacc, 0, cs * 2, children, out csReal);
                 if (result != 0 && result != 1)
                     return new SystemAccessibleObject[0];
-                if (csReal == 1 && children[0] is int && (int)children[0] < 0)
+                if (csReal == 1 && children[0] is int && (int) children[0] < 0)
                     return new SystemAccessibleObject[0];
                 List<SystemAccessibleObject> values = new List<SystemAccessibleObject>();
-                for (int i = 0; i < children.Length; i++)
-                {
-                    if (children[i] != null)
-                    {
-                        try
-                        {
+                for (int i = 0; i < children.Length; i++) {
+                    if (children[i] != null) {
+                        try {
                             values.Add(ObjectToSAO(children[i]));
                         }
-                        catch (InvalidCastException) { }
+                        catch (InvalidCastException) {
+                        }
                     }
                 }
+
                 return values.ToArray();
             }
         }
@@ -466,10 +408,10 @@ namespace ManagedWinapi.Accessibility
         ///
         public override bool Equals(System.Object obj)
         {
-            if (obj == null)
-            {
+            if (obj == null) {
                 return false;
             }
+
             SystemAccessibleObject sao = obj as SystemAccessibleObject;
             return Equals(sao);
         }
@@ -477,10 +419,10 @@ namespace ManagedWinapi.Accessibility
         ///
         public bool Equals(SystemAccessibleObject sao)
         {
-            if ((object)sao == null)
-            {
+            if ((object) sao == null) {
                 return false;
             }
+
             return childID == sao.childID && DeepEquals(iacc, sao.iacc);
         }
 
@@ -503,7 +445,7 @@ namespace ManagedWinapi.Accessibility
             if (sa1.Visible != sa2.Visible) return false;
             if (ia1.accParent == null && ia2.accParent == null) return true;
             if (ia1.accParent == null || ia2.accParent == null) return false;
-            bool de =  DeepEquals((IAccessible)ia1.accParent, (IAccessible)ia2.accParent);
+            bool de = DeepEquals((IAccessible) ia1.accParent, (IAccessible) ia2.accParent);
             return de;
         }
 
@@ -518,14 +460,14 @@ namespace ManagedWinapi.Accessibility
         /// </summary>
         public static bool operator ==(SystemAccessibleObject a, SystemAccessibleObject b)
         {
-            if (System.Object.ReferenceEquals(a, b))
-            {
+            if (System.Object.ReferenceEquals(a, b)) {
                 return true;
             }
-            if (((object)a == null) || ((object)b == null))
-            {
+
+            if (((object) a == null) || ((object) b == null)) {
                 return false;
             }
+
             return a.iacc == b.iacc && a.childID == b.childID;
         }
 
@@ -540,12 +482,10 @@ namespace ManagedWinapi.Accessibility
         ///
         public override string ToString()
         {
-            try
-            {
+            try {
                 return Name + " [" + RoleString + "]";
             }
-            catch
-            {
+            catch {
                 return "??";
             }
         }
@@ -556,6 +496,7 @@ namespace ManagedWinapi.Accessibility
 
         [DllImport("oleacc.dll")]
         private static extern IntPtr AccessibleObjectFromPoint(POINT pt, [Out, MarshalAs(UnmanagedType.Interface)] out IAccessible accObj, [Out] out object ChildID);
+
         [DllImport("oleacc.dll")]
         private static extern uint GetRoleText(uint dwRole, [Out] StringBuilder lpszRole, uint cchRoleMax);
 
@@ -582,8 +523,7 @@ namespace ManagedWinapi.Accessibility
     /// This enumeration lists all kinds of accessible objects that can
     /// be directly assigned to a window.
     /// </summary>
-    public enum AccessibleObjectID : uint
-    {
+    public enum AccessibleObjectID : uint {
         /// <summary>
         /// The window itself.
         /// </summary>

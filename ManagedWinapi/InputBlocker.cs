@@ -1,16 +1,15 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace ManagedWinapi
-{
+
+namespace ManagedWinapi {
     /// <summary>
     /// Blocks keyboard and mouse input until this object is disposed.
     /// Unlike <see cref="ManagedWinapi.Hooks.InputLocker"/>, you cannot detect when the systems
     /// removes the block (which happens when the user presses CTRL+ALT+DEL),
     /// but it works on Windows Vista as well.
     /// </summary>
-    public class InputBlocker : IDisposable
-    {
+    public class InputBlocker : IDisposable {
         bool needUnblock;
 
         /// <summary>
@@ -31,8 +30,10 @@ namespace ManagedWinapi
         }
 
         #region PInvoke Declarations
+
         [DllImport("user32.dll")]
         static extern bool BlockInput(bool fBlockIt);
+
         #endregion
     }
 }

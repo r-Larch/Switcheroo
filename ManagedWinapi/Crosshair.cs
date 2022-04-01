@@ -7,16 +7,15 @@ using System.Text;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 
-namespace ManagedWinapi
-{
+
+namespace ManagedWinapi {
     /// <summary>
     /// This component displays a crosshair icon that can be dragged to any point
     /// on screen. This is useful to select other programs by dragging the crosshair
     /// to a program window.
     /// </summary>
     [DefaultEvent("CrosshairDragged")]
-    public partial class Crosshair : UserControl
-    {
+    public partial class Crosshair : UserControl {
         Image myImage;
         Cursor myCursor;
 
@@ -53,18 +52,15 @@ namespace ManagedWinapi
         {
             dragger.Image = myImage;
             dragger.Cursor = Cursors.Cross;
-            if (CrosshairDragged != null)
-            {
+            if (CrosshairDragged != null) {
                 CrosshairDragged(this, new EventArgs());
             }
         }
 
         private void dragger_MouseMove(object sender, MouseEventArgs e)
         {
-            if (dragger.Cursor == myCursor)
-            {
-                if (CrosshairDragging != null)
-                {
+            if (dragger.Cursor == myCursor) {
+                if (CrosshairDragging != null) {
                     CrosshairDragging(this, new EventArgs());
                 }
             }

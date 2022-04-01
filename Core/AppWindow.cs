@@ -28,54 +28,44 @@ using System.Runtime.InteropServices;
 using System.Text;
 using ManagedWinapi.Windows;
 
-namespace Switcheroo.Core
-{
+
+namespace Switcheroo.Core {
     /// <summary>
     /// This class is a wrapper around the Win32 api window handles
     /// </summary>
-    public class AppWindow : SystemWindow
-    {
-
-        public string ProcessTitle
-        {
-            get
-            {
+    public class AppWindow : SystemWindow {
+        public string ProcessTitle {
+            get {
                 var key = "ProcessTitle-" + HWnd;
                 var processTitle = MemoryCache.Default.Get(key) as string;
-                if (processTitle == null)
-                {
-                    if (IsApplicationFrameWindow())
-                    {
+                if (processTitle == null) {
+                    if (IsApplicationFrameWindow()) {
                         processTitle = "UWP";
                         var underlyingProcessWindow = AllChildWindows.Where(w => w.ProcessId != ProcessId).FirstOrDefault();
-                        if (underlyingProcessWindow != null && underlyingProcessWindow.ProcessName != "")
-                        {
+                        if (underlyingProcessWindow != null && underlyingProcessWindow.ProcessName != "") {
                             processTitle = underlyingProcessWindow.ProcessName;
                         }
                     }
-                    else
-                    {
+                    else {
                         processTitle = ProcessName;
-
                     }
+
                     MemoryCache.Default.Add(key, processTitle, DateTimeOffset.Now.AddHours(1));
                 }
+
                 return processTitle;
             }
         }
 
-        public Icon LargeWindowIcon
-        {
+        public Icon LargeWindowIcon {
             get { return new WindowIconFinder().Find(this, WindowIconSize.Large); }
         }
 
-        public Icon SmallWindowIcon
-        {
+        public Icon SmallWindowIcon {
             get { return new WindowIconFinder().Find(this, WindowIconSize.Small); }
         }
 
-        public string ExecutablePath
-        {
+        public string ExecutablePath {
             get { return GetExecutablePath(Process.Id); }
         }
 
@@ -98,20 +88,16 @@ namespace Switcheroo.Core
             WinApi.SwitchToThisWindow(lastActiveVisiblePopup, true);
         }
 
-        public new AppWindow Owner
-        {
-            get
-            {
+        public new AppWindow Owner {
+            get {
                 var ownerHandle = WinApi.GetWindow(HWnd, WinApi.GetWindowCmd.GW_OWNER);
                 if (ownerHandle == IntPtr.Zero) return null;
                 return new AppWindow(ownerHandle);
             }
         }
 
-        public new static IEnumerable<AppWindow> AllToplevelWindows
-        {
-            get
-            {
+        public new static IEnumerable<AppWindow> AllToplevelWindows {
+            get {
                 return SystemWindow.AllToplevelWindows
                     .Select(w => new AppWindow(w.HWnd));
             }
@@ -141,7 +127,7 @@ namespace Switcheroo.Core
         private bool IsToolWindow()
         {
             return (ExtendedStyle & WindowExStyleFlags.TOOLWINDOW) == WindowExStyleFlags.TOOLWINDOW
-                    || (Style & WindowStyleFlags.TOOLWINDOW) == WindowStyleFlags.TOOLWINDOW;
+                   || (Style & WindowStyleFlags.TOOLWINDOW) == WindowStyleFlags.TOOLWINDOW;
         }
 
         private bool IsAppWindow()
@@ -164,15 +150,14 @@ namespace Switcheroo.Core
 
             // See if we are the last active visible popup
             var hwndTry = IntPtr.Zero;
-            while (hwndWalk != hwndTry)
-            {
+            while (hwndWalk != hwndTry) {
                 hwndTry = hwndWalk;
                 hwndWalk = WinApi.GetLastActivePopup(hwndTry);
-                if (WinApi.IsWindowVisible(hwndWalk))
-                {
+                if (WinApi.IsWindowVisible(hwndWalk)) {
                     return hwndWalk;
                 }
             }
+
             return hwndWalk;
         }
 
@@ -212,14 +197,13 @@ namespace Switcheroo.Core
             //    2 = Program is running on a different virtual desktop
 
             var hasAppropriateApplicationViewCloakType = false;
-            WinApi.EnumPropsEx(HWnd, (hwnd, lpszString, data, dwData) =>
-            {
+            WinApi.EnumPropsEx(HWnd, (hwnd, lpszString, data, dwData) => {
                 var propName = Marshal.PtrToStringAnsi(lpszString);
-                if (propName == "ApplicationViewCloakType")
-                {
+                if (propName == "ApplicationViewCloakType") {
                     hasAppropriateApplicationViewCloakType = data != 1;
                     return 0;
                 }
+
                 return 1;
             }, IntPtr.Zero);
 
@@ -233,19 +217,17 @@ namespace Switcheroo.Core
             var hprocess = WinApi.OpenProcess(WinApi.ProcessAccess.QueryLimitedInformation, false, processId);
             if (hprocess == IntPtr.Zero) throw new Win32Exception(Marshal.GetLastWin32Error());
 
-            try
-            {
+            try {
                 // ReSharper disable once RedundantAssignment
                 var size = buffer.Capacity;
-                if (WinApi.QueryFullProcessImageName(hprocess, 0, buffer, out size))
-                {
+                if (WinApi.QueryFullProcessImageName(hprocess, 0, buffer, out size)) {
                     return buffer.ToString();
                 }
             }
-            finally
-            {
+            finally {
                 WinApi.CloseHandle(hprocess);
             }
+
             throw new Win32Exception(Marshal.GetLastWin32Error());
         }
     }

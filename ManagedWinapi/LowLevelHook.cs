@@ -4,13 +4,12 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Text;
 
-namespace ManagedWinapi.Hooks
-{
+
+namespace ManagedWinapi.Hooks {
     /// <summary>
     /// A hook that intercepts keyboard events.
     /// </summary>
-    public class LowLevelKeyboardHook : Hook
-    {
+    public class LowLevelKeyboardHook : Hook {
         char currentDeadChar = '\0';
 
         /// <summary>
@@ -68,26 +67,24 @@ namespace ManagedWinapi.Hooks
 
         private int LowLevelKeyboardHook_Callback(int code, IntPtr wParam, IntPtr lParam, ref bool callNext)
         {
-            if (code == HC_ACTION)
-            {
-                KBDLLHOOKSTRUCT llh = (KBDLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(KBDLLHOOKSTRUCT));
+            if (code == HC_ACTION) {
+                KBDLLHOOKSTRUCT llh = (KBDLLHOOKSTRUCT) Marshal.PtrToStructure(lParam, typeof(KBDLLHOOKSTRUCT));
                 bool handled = false;
-                int msg = (int)wParam;
-                if (KeyIntercepted != null)
-                {
+                int msg = (int) wParam;
+                if (KeyIntercepted != null) {
                     KeyIntercepted(msg, llh.vkCode, llh.scanCode, llh.flags, llh.time, llh.dwExtraInfo, ref handled);
                 }
-                if (MessageIntercepted != null)
-                {
-                    MessageIntercepted(new LowLevelKeyboardMessage((int)wParam, llh.vkCode, llh.scanCode, llh.flags, llh.time, llh.dwExtraInfo), ref handled);
+
+                if (MessageIntercepted != null) {
+                    MessageIntercepted(new LowLevelKeyboardMessage((int) wParam, llh.vkCode, llh.scanCode, llh.flags, llh.time, llh.dwExtraInfo), ref handled);
                 }
-                if (handled)
-                {
+
+                if (handled) {
                     callNext = false;
                     return 1;
                 }
-                if (CharIntercepted != null && (msg == 256 || msg == 260))
-                {
+
+                if (CharIntercepted != null && (msg == 256 || msg == 260)) {
                     // Note that dead keys are somehow tricky, since ToUnicode changes their state
                     // in the keyboard driver. So, if we catch a dead key and call ToUnicode on it,
                     // we will have to stop the hook; otherwise the deadkey appears twice on the screen.
@@ -97,37 +94,34 @@ namespace ManagedWinapi.Hooks
                     // some deadkeys are unshifted but used on shifted characters or vice versa.
                     // This solution will not lose any dead keys; its only drawback is that dead
                     // keys are not properly translated. Better implementations are welcome.
-                    if (llh.vkCode == (int)Keys.ShiftKey ||
-                        llh.vkCode == (int)Keys.LShiftKey ||
-                        llh.vkCode == (int)Keys.RShiftKey ||
-                        llh.vkCode == (int)Keys.LControlKey ||
-                        llh.vkCode == (int)Keys.RControlKey ||
-                        llh.vkCode == (int)Keys.ControlKey ||
-                        llh.vkCode == (int)Keys.Menu ||
-                        llh.vkCode == (int)Keys.LMenu ||
-                        llh.vkCode == (int)Keys.RMenu)
-                    {
+                    if (llh.vkCode == (int) Keys.ShiftKey ||
+                        llh.vkCode == (int) Keys.LShiftKey ||
+                        llh.vkCode == (int) Keys.RShiftKey ||
+                        llh.vkCode == (int) Keys.LControlKey ||
+                        llh.vkCode == (int) Keys.RControlKey ||
+                        llh.vkCode == (int) Keys.ControlKey ||
+                        llh.vkCode == (int) Keys.Menu ||
+                        llh.vkCode == (int) Keys.LMenu ||
+                        llh.vkCode == (int) Keys.RMenu) {
                         // ignore shift keys, they do not get modified by dead keys.
                     }
-                    else if (currentDeadChar != '\0')
-                    {
-                        CharIntercepted(msg, "" + (llh.vkCode == (int)Keys.Space ? currentDeadChar : '\x01'), true,
+                    else if (currentDeadChar != '\0') {
+                        CharIntercepted(msg, "" + (llh.vkCode == (int) Keys.Space ? currentDeadChar : '\x01'), true,
                             llh.vkCode, llh.scanCode, llh.flags, llh.time, llh.dwExtraInfo);
                         currentDeadChar = '\0';
                     }
-                    else
-                    {
+                    else {
                         short dummy = new KeyboardKey(Keys.Capital).State; // will refresh CAPS LOCK state for current thread
                         byte[] kbdState = new byte[256];
                         ApiHelper.FailIfZero(GetKeyboardState(kbdState));
                         StringBuilder buff = new StringBuilder(64);
-                        int length = ToUnicode((int)llh.vkCode, llh.scanCode, kbdState, buff, 64, 0);
-                        if (length == -1)
-                        {
+                        int length = ToUnicode((int) llh.vkCode, llh.scanCode, kbdState, buff, 64, 0);
+                        if (length == -1) {
                             currentDeadChar = buff[0];
                             callNext = false;
                             return 1;
                         }
+
                         if (buff.Length != length)
                             buff.Remove(length, buff.Length - length);
                         CharIntercepted(msg, buff.ToString(), false,
@@ -135,14 +129,14 @@ namespace ManagedWinapi.Hooks
                     }
                 }
             }
+
             return 0;
         }
 
         #region PInvoke Declarations
 
         [StructLayout(LayoutKind.Sequential)]
-        private class KBDLLHOOKSTRUCT
-        {
+        private class KBDLLHOOKSTRUCT {
             public int vkCode;
             public int scanCode;
             public int flags;
@@ -155,8 +149,8 @@ namespace ManagedWinapi.Hooks
 
         [DllImport("user32.dll")]
         private static extern int ToUnicode(int wVirtKey, int wScanCode, byte[] lpKeyState,
-           [Out, MarshalAs(UnmanagedType.LPWStr, SizeConst = 64)] StringBuilder pwszBuff, int cchBuff,
-           uint wFlags);
+            [Out, MarshalAs(UnmanagedType.LPWStr, SizeConst = 64)] StringBuilder pwszBuff, int cchBuff,
+            uint wFlags);
 
         #endregion
     }
@@ -164,9 +158,7 @@ namespace ManagedWinapi.Hooks
     /// <summary>
     /// A hook that intercepts mouse events
     /// </summary>
-    public class LowLevelMouseHook : Hook
-    {
-
+    public class LowLevelMouseHook : Hook {
         /// <summary>
         /// Called when a mouse action has been intercepted.
         /// </summary>
@@ -203,32 +195,30 @@ namespace ManagedWinapi.Hooks
 
         private int LowLevelMouseHook_Callback(int code, IntPtr wParam, IntPtr lParam, ref bool callNext)
         {
-            if (code == HC_ACTION)
-            {
-                MSLLHOOKSTRUCT llh = (MSLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(MSLLHOOKSTRUCT));
+            if (code == HC_ACTION) {
+                MSLLHOOKSTRUCT llh = (MSLLHOOKSTRUCT) Marshal.PtrToStructure(lParam, typeof(MSLLHOOKSTRUCT));
                 bool handled = false;
-                if (MouseIntercepted != null)
-                {
-                    MouseIntercepted((int)wParam, llh.pt, llh.mouseData, llh.flags, llh.time, llh.dwExtraInfo, ref handled);
+                if (MouseIntercepted != null) {
+                    MouseIntercepted((int) wParam, llh.pt, llh.mouseData, llh.flags, llh.time, llh.dwExtraInfo, ref handled);
                 }
-                if (MessageIntercepted != null)
-                {
-                    MessageIntercepted(new LowLevelMouseMessage((int)wParam, llh.pt, llh.mouseData, llh.flags, llh.time, llh.dwExtraInfo), ref handled);
+
+                if (MessageIntercepted != null) {
+                    MessageIntercepted(new LowLevelMouseMessage((int) wParam, llh.pt, llh.mouseData, llh.flags, llh.time, llh.dwExtraInfo), ref handled);
                 }
-                if (handled)
-                {
+
+                if (handled) {
                     callNext = false;
                     return 1;
                 }
             }
+
             return 0;
         }
 
         #region PInvoke Declarations
 
         [StructLayout(LayoutKind.Sequential)]
-        private class MSLLHOOKSTRUCT
-        {
+        private class MSLLHOOKSTRUCT {
             public POINT pt;
             public int mouseData;
             public int flags;
@@ -247,8 +237,7 @@ namespace ManagedWinapi.Hooks
     /// <summary>
     /// A message that has been intercepted by a low-level hook
     /// </summary>
-    public abstract class LowLevelMessage
-    {
+    public abstract class LowLevelMessage {
         private int time;
         private int flags;
         private int msg;
@@ -265,8 +254,7 @@ namespace ManagedWinapi.Hooks
         /// <summary>
         /// The time this message happened.
         /// </summary>
-        public int Time
-        {
+        public int Time {
             get { return time; }
             set { time = value; }
         }
@@ -274,24 +262,21 @@ namespace ManagedWinapi.Hooks
         /// <summary>
         /// Flags of the message. Its contents depend on the message.
         /// </summary>
-        public int Flags
-        {
+        public int Flags {
             get { return flags; }
         }
 
         /// <summary>
         /// The message identifier.
         /// </summary>
-        public int Message
-        {
+        public int Message {
             get { return msg; }
         }
 
         /// <summary>
         /// Extra information. Its contents depend on the message.
         /// </summary>
-        public IntPtr ExtraInfo
-        {
+        public IntPtr ExtraInfo {
             get { return extraInfo; }
         }
 
@@ -304,8 +289,7 @@ namespace ManagedWinapi.Hooks
     /// <summary>
     /// A message that has been intercepted by a low-level mouse hook
     /// </summary>
-    public class LowLevelMouseMessage : LowLevelMessage
-    {
+    public class LowLevelMouseMessage : LowLevelMessage {
         private POINT pt;
         private int mouseData;
 
@@ -322,51 +306,47 @@ namespace ManagedWinapi.Hooks
         /// <summary>
         /// The mouse position where this message occurred.
         /// </summary>
-        public POINT Point
-        {
+        public POINT Point {
             get { return pt; }
         }
 
         /// <summary>
         /// Additional mouse data, depending on the type of event.
         /// </summary>
-        public int MouseData
-        {
+        public int MouseData {
             get { return mouseData; }
         }
 
         /// <summary>
         /// Mouse event flags needed to replay this message.
         /// </summary>
-        public uint MouseEventFlags
-        {
-            get
-            {
-                switch (Message)
-                {
+        public uint MouseEventFlags {
+            get {
+                switch (Message) {
                     case WM_LBUTTONDOWN:
-                        return (uint)MouseEventFlagValues.LEFTDOWN;
+                        return (uint) MouseEventFlagValues.LEFTDOWN;
                     case WM_LBUTTONUP:
-                        return (uint)MouseEventFlagValues.LEFTUP;
+                        return (uint) MouseEventFlagValues.LEFTUP;
                     case WM_MOUSEMOVE:
-                        return (uint)MouseEventFlagValues.MOVE;
+                        return (uint) MouseEventFlagValues.MOVE;
                     case WM_MOUSEWHEEL:
-                        return (uint)MouseEventFlagValues.WHEEL;
+                        return (uint) MouseEventFlagValues.WHEEL;
                     case WM_MOUSEHWHEEL:
-                        return (uint)MouseEventFlagValues.HWHEEL;
+                        return (uint) MouseEventFlagValues.HWHEEL;
                     case WM_RBUTTONDOWN:
-                        return (uint)MouseEventFlagValues.RIGHTDOWN;
+                        return (uint) MouseEventFlagValues.RIGHTDOWN;
                     case WM_RBUTTONUP:
-                        return (uint)MouseEventFlagValues.RIGHTUP;
+                        return (uint) MouseEventFlagValues.RIGHTUP;
                     case WM_MBUTTONDOWN:
-                        return (uint)MouseEventFlagValues.MIDDLEDOWN;
+                        return (uint) MouseEventFlagValues.MIDDLEDOWN;
                     case WM_MBUTTONUP:
-                        return (uint)MouseEventFlagValues.MIDDLEUP;
+                        return (uint) MouseEventFlagValues.MIDDLEUP;
                     case WM_MBUTTONDBLCLK:
                     case WM_RBUTTONDBLCLK:
                     case WM_LBUTTONDBLCLK:
                         return 0;
                 }
+
                 throw new Exception("Unsupported message");
             }
         }
@@ -379,13 +359,13 @@ namespace ManagedWinapi.Hooks
         {
             Cursor.Position = Point;
             if (MouseEventFlags != 0)
-                KeyboardKey.InjectMouseEvent(MouseEventFlags, 0, 0, (uint)mouseData >> 16, new UIntPtr((ulong)ExtraInfo.ToInt64()));
+                KeyboardKey.InjectMouseEvent(MouseEventFlags, 0, 0, (uint) mouseData >> 16, new UIntPtr((ulong) ExtraInfo.ToInt64()));
         }
 
         #region PInvoke Declarations
+
         [Flags]
-        private enum MouseEventFlagValues
-        {
+        private enum MouseEventFlagValues {
             LEFTDOWN = 0x00000002,
             LEFTUP = 0x00000004,
             MIDDLEDOWN = 0x00000020,
@@ -409,14 +389,14 @@ namespace ManagedWinapi.Hooks
         const int WM_MBUTTONDBLCLK = 0x209;
         const int WM_MOUSEWHEEL = 0x20A;
         const int WM_MOUSEHWHEEL = 0x020E;
+
         #endregion
     }
 
     /// <summary>
     /// A message that has been intercepted by a low-level mouse hook
     /// </summary>
-    public class LowLevelKeyboardMessage : LowLevelMessage
-    {
+    public class LowLevelKeyboardMessage : LowLevelMessage {
         private int vkCode;
         private int scanCode;
 
@@ -433,28 +413,23 @@ namespace ManagedWinapi.Hooks
         /// <summary>
         /// The virtual key code that caused this message.
         /// </summary>
-        public int VirtualKeyCode
-        {
+        public int VirtualKeyCode {
             get { return vkCode; }
         }
 
         /// <summary>
         /// The scan code that caused this message.
         /// </summary>
-        public int ScanCode
-        {
+        public int ScanCode {
             get { return scanCode; }
         }
 
         /// <summary>
         /// Flags needed to replay this event.
         /// </summary>
-        public uint KeyboardEventFlags
-        {
-            get
-            {
-                switch (Message)
-                {
+        public uint KeyboardEventFlags {
+            get {
+                switch (Message) {
                     case WM_KEYDOWN:
                     case WM_SYSKEYDOWN:
                         return 0;
@@ -462,6 +437,7 @@ namespace ManagedWinapi.Hooks
                     case WM_SYSKEYUP:
                         return KEYEVENTF_KEYUP;
                 }
+
                 throw new Exception("Unsupported message");
             }
         }
@@ -471,15 +447,17 @@ namespace ManagedWinapi.Hooks
         /// </summary>
         public override void ReplayEvent()
         {
-            KeyboardKey.InjectKeyboardEvent((Keys)vkCode, (byte)scanCode, KeyboardEventFlags, new UIntPtr((ulong)ExtraInfo.ToInt64()));
+            KeyboardKey.InjectKeyboardEvent((Keys) vkCode, (byte) scanCode, KeyboardEventFlags, new UIntPtr((ulong) ExtraInfo.ToInt64()));
         }
 
         #region PInvoke Declarations
+
         const int KEYEVENTF_KEYUP = 0x2;
         const int WM_KEYDOWN = 0x100,
             WM_KEYUP = 0x101,
             WM_SYSKEYDOWN = 0x104,
             WM_SYSKEYUP = 0x105;
+
         #endregion
     }
 }

@@ -27,40 +27,32 @@ using System.Reflection;
 using System.Security.Principal;
 using System.Threading;
 
-namespace Switcheroo
-{
-    internal class Program
-    {
 
-
+namespace Switcheroo {
+    internal class Program {
         private const string mutex_id = "DBDE24E4-91F6-11DF-B495-C536DFD72085-switcheroo";
 
         [STAThread]
         private static void Main()
         {
-
             Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Debug()
-            .WriteTo.Console()
-            .WriteTo.File("logs\\my_log.log", rollingInterval: RollingInterval.Day)
-            .CreateLogger();
+                .MinimumLevel.Debug()
+                .WriteTo.Console()
+                .WriteTo.File("logs\\my_log.log", rollingInterval: RollingInterval.Day)
+                .CreateLogger();
 
             Log.Information("start switcheroo");
 
             RunAsAdministratorIfConfigured();
 
-            using (var mutex = new Mutex(false, mutex_id))
-            {
+            using (var mutex = new Mutex(false, mutex_id)) {
                 var hasHandle = false;
-                try
-                {
-                    try
-                    {
+                try {
+                    try {
                         hasHandle = mutex.WaitOne(5000, false);
                         if (hasHandle == false) return; //another instance exist
                     }
-                    catch (AbandonedMutexException)
-                    {
+                    catch (AbandonedMutexException) {
                         // Log the fact the mutex was abandoned in another process, it will still get aquired
                     }
 
@@ -70,14 +62,12 @@ namespace Switcheroo
 
                     MigrateUserSettings();
 
-                    var app = new App
-                    {
+                    var app = new App {
                         MainWindow = new MainWindow()
                     };
                     app.Run();
                 }
-                finally
-                {
+                finally {
                     if (hasHandle)
                         mutex.ReleaseMutex();
                 }
@@ -86,10 +76,8 @@ namespace Switcheroo
 
         private static void RunAsAdministratorIfConfigured()
         {
-            if (RunAsAdminRequested() && !IsRunAsAdmin())
-            {
-                ProcessStartInfo proc = new ProcessStartInfo
-                {
+            if (RunAsAdminRequested() && !IsRunAsAdmin()) {
+                ProcessStartInfo proc = new ProcessStartInfo {
                     UseShellExecute = true,
                     WorkingDirectory = Environment.CurrentDirectory,
                     FileName = Assembly.GetEntryAssembly().Location,
@@ -110,10 +98,10 @@ namespace Switcheroo
         {
             var portableSettingsProvider = new PortableSettingsProvider();
             settings.Providers.Add(portableSettingsProvider);
-            foreach (SettingsProperty prop in settings.Properties)
-            {
+            foreach (SettingsProperty prop in settings.Properties) {
                 prop.Provider = portableSettingsProvider;
             }
+
             settings.Reload();
         }
 

@@ -17,6 +17,7 @@
  * http://www.gnu.org/licenses/lgpl.html or write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -24,13 +25,12 @@ using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Drawing;
 
-namespace ManagedWinapi.Windows
-{
+
+namespace ManagedWinapi.Windows {
     /// <summary>
     /// Any list view, including those from other applications.
     /// </summary>
-    public class SystemListView
-    {
+    public class SystemListView {
         /// <summary>
         /// Get a SystemListView reference from a SystemWindow (which is a list view)
         /// </summary>
@@ -50,32 +50,22 @@ namespace ManagedWinapi.Windows
         /// <summary>
         /// The number of items (icons) in this list view.
         /// </summary>
-        public int Count
-        {
-            get
-            {
-                return sw.SendGetMessage(LVM_GETITEMCOUNT);
-            }
+        public int Count {
+            get { return sw.SendGetMessage(LVM_GETITEMCOUNT); }
         }
 
         /// <summary>
         /// An item of this list view.
         /// </summary>
-        public SystemListViewItem this[int index]
-        {
-            get
-            {
-                return this[index, 0];
-            }
+        public SystemListViewItem this[int index] {
+            get { return this[index, 0]; }
         }
 
         /// <summary>
         /// A subitem (a column value) of an item of this list view.
         /// </summary>
-        public SystemListViewItem this[int index, int subIndex]
-        {
-            get
-            {
+        public SystemListViewItem this[int index, int subIndex] {
+            get {
                 LVITEM lvi = new LVITEM();
                 lvi.cchTextMax = 300;
                 lvi.iItem = index;
@@ -86,13 +76,13 @@ namespace ManagedWinapi.Windows
                 lvi.pszText = tc.Location;
                 ProcessMemoryChunk lc = ProcessMemoryChunk.AllocStruct(sw.Process, lvi);
                 ApiHelper.FailIfZero(SystemWindow.SendMessage(new HandleRef(sw, sw.HWnd), SystemListView.LVM_GETITEM, IntPtr.Zero, lc.Location));
-                lvi = (LVITEM)lc.ReadToStructure(0, typeof(LVITEM));
+                lvi = (LVITEM) lc.ReadToStructure(0, typeof(LVITEM));
                 lc.Dispose();
-                if (lvi.pszText != tc.Location)
-                {
+                if (lvi.pszText != tc.Location) {
                     tc.Dispose();
                     tc = new ProcessMemoryChunk(sw.Process, lvi.pszText, lvi.cchTextMax);
                 }
+
                 byte[] tmp = tc.Read();
                 string title = Encoding.Default.GetString(tmp);
                 if (title.IndexOf('\0') != -1) title = title.Substring(0, title.IndexOf('\0'));
@@ -106,10 +96,8 @@ namespace ManagedWinapi.Windows
         /// <summary>
         /// All columns of this list view, if it is in report view.
         /// </summary>
-        public SystemListViewColumn[] Columns
-        {
-            get
-            {
+        public SystemListViewColumn[] Columns {
+            get {
                 List<SystemListViewColumn> result = new List<SystemListViewColumn>();
                 LVCOLUMN lvc = new LVCOLUMN();
                 lvc.cchTextMax = 300;
@@ -117,16 +105,16 @@ namespace ManagedWinapi.Windows
                 ProcessMemoryChunk tc = ProcessMemoryChunk.Alloc(sw.Process, 301);
                 lvc.pszText = tc.Location;
                 ProcessMemoryChunk lc = ProcessMemoryChunk.AllocStruct(sw.Process, lvc);
-                for (int i = 0; ; i++)
-                {
+                for (int i = 0;; i++) {
                     IntPtr ok = SystemWindow.SendMessage(new HandleRef(sw, sw.HWnd), LVM_GETCOLUMN, new IntPtr(i), lc.Location);
                     if (ok == IntPtr.Zero) break;
-                    lvc = (LVCOLUMN)lc.ReadToStructure(0, typeof(LVCOLUMN));
+                    lvc = (LVCOLUMN) lc.ReadToStructure(0, typeof(LVCOLUMN));
                     byte[] tmp = tc.Read();
                     string title = Encoding.Default.GetString(tmp);
                     if (title.IndexOf('\0') != -1) title = title.Substring(0, title.IndexOf('\0'));
                     result.Add(new SystemListViewColumn(lvc.fmt, lvc.cx, lvc.iSubItem, title));
                 }
+
                 tc.Dispose();
                 lc.Dispose();
                 return result.ToArray();
@@ -151,8 +139,7 @@ namespace ManagedWinapi.Windows
             LVCF_SUBITEM = 0x8;
 
         [StructLayout(LayoutKind.Sequential)]
-        private struct LVCOLUMN
-        {
+        private struct LVCOLUMN {
             public UInt32 mask;
             public Int32 fmt;
             public Int32 cx;
@@ -162,8 +149,7 @@ namespace ManagedWinapi.Windows
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        private struct LVITEM
-        {
+        private struct LVITEM {
             public UInt32 mask;
             public Int32 iItem;
             public Int32 iSubItem;
@@ -174,14 +160,14 @@ namespace ManagedWinapi.Windows
             public Int32 iImage;
             public IntPtr lParam;
         }
+
         #endregion
     }
 
     /// <summary>
     /// An item of a list view.
     /// </summary>
-    public class SystemListViewItem
-    {
+    public class SystemListViewItem {
         readonly string title;
         readonly uint state;
         readonly int image, index;
@@ -199,48 +185,47 @@ namespace ManagedWinapi.Windows
         /// <summary>
         /// The title of this item
         /// </summary>
-        public string Title { get { return title; } }
+        public string Title {
+            get { return title; }
+        }
 
         /// <summary>
         /// The index of this item's image in the image list of this list view.
         /// </summary>
-        public int Image { get { return image; } }
+        public int Image {
+            get { return image; }
+        }
 
         /// <summary>
         /// State bits of this item.
         /// </summary>
-        public uint State { get { return state; } }
+        public uint State {
+            get { return state; }
+        }
 
         /// <summary>
         /// Position of the upper left corner of this item.
         /// </summary>
-        public Point Position
-        {
-            get
-            {
+        public Point Position {
+            get {
                 POINT pt = new POINT();
                 ProcessMemoryChunk c = ProcessMemoryChunk.AllocStruct(sw.Process, pt);
                 ApiHelper.FailIfZero(SystemWindow.SendMessage(new HandleRef(sw, sw.HWnd), SystemListView.LVM_GETITEMPOSITION, new IntPtr(index), c.Location));
-                pt = (POINT)c.ReadToStructure(0, typeof(POINT));
+                pt = (POINT) c.ReadToStructure(0, typeof(POINT));
                 return new Point(pt.X, pt.Y);
             }
-            set
-            {
-                SystemWindow.SendMessage(new HandleRef(sw, sw.HWnd), SystemListView.LVM_SETITEMPOSITION, new IntPtr(index), new IntPtr(value.X + (value.Y << 16)));
-            }
+            set { SystemWindow.SendMessage(new HandleRef(sw, sw.HWnd), SystemListView.LVM_SETITEMPOSITION, new IntPtr(index), new IntPtr(value.X + (value.Y << 16))); }
         }
 
         /// <summary>
         /// Bounding rectangle of this item.
         /// </summary>
-        public RECT Rectangle
-        {
-            get
-            {
+        public RECT Rectangle {
+            get {
                 RECT r = new RECT();
                 ProcessMemoryChunk c = ProcessMemoryChunk.AllocStruct(sw.Process, r);
                 SystemWindow.SendMessage(new HandleRef(sw, sw.HWnd), SystemListView.LVM_GETITEMRECT, new IntPtr(index), c.Location);
-                r = (RECT)c.ReadToStructure(0, typeof(RECT));
+                r = (RECT) c.ReadToStructure(0, typeof(RECT));
                 return r;
             }
         }
@@ -249,8 +234,7 @@ namespace ManagedWinapi.Windows
     /// <summary>
     /// A column of a list view.
     /// </summary>
-    public class SystemListViewColumn
-    {
+    public class SystemListViewColumn {
         readonly int format;
         readonly int width;
         readonly int subIndex;
@@ -258,22 +242,23 @@ namespace ManagedWinapi.Windows
 
         internal SystemListViewColumn(int format, int width, int subIndex, string title)
         {
-            this.format = format; this.width = width; this.subIndex = subIndex; this.title = title;
+            this.format = format;
+            this.width = width;
+            this.subIndex = subIndex;
+            this.title = title;
         }
 
         /// <summary>
         /// The format (like left justified) of this column.
         /// </summary>
-        public int Format
-        {
+        public int Format {
             get { return format; }
         }
 
         /// <summary>
         /// The width of this column.
         /// </summary>
-        public int Width
-        {
+        public int Width {
             get { return width; }
         }
 
@@ -282,16 +267,14 @@ namespace ManagedWinapi.Windows
         /// that the second column does not necessarily display the second
         /// subitem - especially when the columns can be reordered by the user.
         /// </summary>
-        public int SubIndex
-        {
+        public int SubIndex {
             get { return subIndex; }
         }
 
         /// <summary>
         /// The title of this column.
         /// </summary>
-        public string Title
-        {
+        public string Title {
             get { return title; }
         }
     }

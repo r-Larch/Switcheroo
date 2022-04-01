@@ -17,6 +17,7 @@
  * http://www.gnu.org/licenses/lgpl.html or write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+
 using System;
 using System.ComponentModel;
 using System.Collections.Generic;
@@ -26,15 +27,13 @@ using ManagedWinapi.Windows;
 using System.Runtime.InteropServices;
 using Microsoft.Win32;
 
-namespace ManagedWinapi
-{
+
+namespace ManagedWinapi {
     /// <summary>
     /// Specifies a component that monitors the system clipboard for changes.
     /// </summary>
     [DefaultEvent("ClipboardChanged")]
-    public class ClipboardNotifier : Component
-    {
-
+    public class ClipboardNotifier : Component {
         /// <summary>
         /// Occurs when the clipboard contents have changed.
         /// </summary>
@@ -61,17 +60,16 @@ namespace ManagedWinapi
         /// </summary>
         public ClipboardNotifier()
         {
-            if (instantiated)
-            {
+            if (instantiated) {
                 // use new windows if more than one instance is used.
                 System.Diagnostics.Debug.WriteLine("WARNING: More than one ClipboardNotifier used!");
                 ednw = new EventDispatchingNativeWindow();
             }
-            else
-            {
+            else {
                 ednw = EventDispatchingNativeWindow.Instance;
                 instantiated = true;
             }
+
             ednw.EventHandler += clipboardEventHandler;
             hWnd = ednw.Handle;
             nextHWnd = SetClipboardViewer(hWnd);
@@ -90,8 +88,7 @@ namespace ManagedWinapi
         void clipboardEventHandler(ref System.Windows.Forms.Message m, ref bool handled)
         {
             if (handled) return;
-            if (m.Msg == WM_DRAWCLIPBOARD)
-            {
+            if (m.Msg == WM_DRAWCLIPBOARD) {
                 // notify me
                 if (ClipboardChanged != null)
                     ClipboardChanged(this, EventArgs.Empty);
@@ -99,14 +96,11 @@ namespace ManagedWinapi
                 SendMessage(nextHWnd, m.Msg, m.WParam, m.LParam);
                 handled = true;
             }
-            else if (m.Msg == WM_CHANGECBCHAIN)
-            {
-                if (m.WParam == nextHWnd)
-                {
+            else if (m.Msg == WM_CHANGECBCHAIN) {
+                if (m.WParam == nextHWnd) {
                     nextHWnd = m.LParam;
                 }
-                else
-                {
+                else {
                     SendMessage(nextHWnd, m.Msg, m.WParam, m.LParam);
                 }
             }
@@ -123,8 +117,8 @@ namespace ManagedWinapi
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         private static extern int SendMessage(IntPtr hwnd, int wMsg, IntPtr wParam, IntPtr lParam);
 
-        private static readonly int 
-            WM_DRAWCLIPBOARD = 0x0308, 
+        private static readonly int
+            WM_DRAWCLIPBOARD = 0x0308,
             WM_CHANGECBCHAIN = 0x030D;
 
         #endregion

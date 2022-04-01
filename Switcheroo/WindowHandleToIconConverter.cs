@@ -26,10 +26,9 @@ using System.Runtime.Caching;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
 
-namespace Switcheroo
-{
-    public class WindowHandleToIconConverter : IValueConverter
-    {
+
+namespace Switcheroo {
+    public class WindowHandleToIconConverter : IValueConverter {
         private readonly IconToBitmapImageConverter _iconToBitmapConverter;
 
         public WindowHandleToIconConverter()
@@ -39,19 +38,19 @@ namespace Switcheroo
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var handle = (IntPtr)value;
+            var handle = (IntPtr) value;
             var key = "IconImage-" + handle;
             var shortCacheKey = key + "-shortCache";
             var longCacheKey = key + "-longCache";
             var iconImage = MemoryCache.Default.Get(shortCacheKey) as BitmapImage;
-            if (iconImage == null)
-            {
+            if (iconImage == null) {
                 var window = new AppWindow(handle);
                 var icon = ShouldUseSmallTaskbarIcons() ? window.SmallWindowIcon : window.LargeWindowIcon;
                 iconImage = _iconToBitmapConverter.Convert(icon) ?? new BitmapImage();
                 MemoryCache.Default.Set(shortCacheKey, iconImage, DateTimeOffset.Now.AddSeconds(5));
                 MemoryCache.Default.Set(longCacheKey, iconImage, DateTimeOffset.Now.AddMinutes(120));
             }
+
             return iconImage;
         }
 
@@ -60,23 +59,19 @@ namespace Switcheroo
             var cacheKey = "SmallTaskbarIcons";
 
             var cachedSetting = MemoryCache.Default.Get(cacheKey) as bool?;
-            if (cachedSetting != null)
-            {
+            if (cachedSetting != null) {
                 return cachedSetting.Value;
             }
 
             using (
                 var registryKey =
-                    Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"))
-            {
-                if (registryKey == null)
-                {
+                Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced")) {
+                if (registryKey == null) {
                     return false;
                 }
 
                 var value = registryKey.GetValue("TaskbarSmallIcons");
-                if (value == null)
-                {
+                if (value == null) {
                     return false;
                 }
 

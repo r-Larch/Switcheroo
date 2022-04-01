@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Switcheroo
-{
-    public class WindowCloser : IDisposable
-    {
+
+namespace Switcheroo {
+    public class WindowCloser : IDisposable {
         private bool _isDisposed;
 
         private static readonly TimeSpan CheckInterval = TimeSpan.FromMilliseconds(125);

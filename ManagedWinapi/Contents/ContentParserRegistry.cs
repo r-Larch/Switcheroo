@@ -17,19 +17,17 @@
  * http://www.gnu.org/licenses/lgpl.html or write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+
 using System;
 using System.Collections.Generic;
 
-namespace ManagedWinapi.Windows.Contents
-{
-    internal class ContentParserRegistry
-    {
+
+namespace ManagedWinapi.Windows.Contents {
+    internal class ContentParserRegistry {
         static ContentParserRegistry instance = null;
 
-        public static ContentParserRegistry Instance
-        {
-            get
-            {
+        public static ContentParserRegistry Instance {
+            get {
                 if (instance == null)
                     instance = new ContentParserRegistry();
                 return instance;
@@ -51,10 +49,11 @@ namespace ManagedWinapi.Windows.Contents
 
         public WindowContentParser GetParser(SystemWindow sw)
         {
-            foreach(WindowContentParser p in parsers) {
+            foreach (WindowContentParser p in parsers) {
                 if (p.CanParseContent(sw))
                     return p;
             }
+
             return null;
         }
     }

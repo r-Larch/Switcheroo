@@ -3,13 +3,12 @@ using System.Text;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 
-namespace ManagedWinapi
-{
+
+namespace ManagedWinapi {
     /// <summary>
     /// This class contains utility methods related to keys on the keyboard.
     /// </summary>
-    public class KeyboardKey
-    {
+    public class KeyboardKey {
         readonly Keys key;
         readonly bool extended;
 
@@ -20,8 +19,7 @@ namespace ManagedWinapi
         public KeyboardKey(Keys key)
         {
             this.key = key;
-            switch (key)
-            {
+            switch (key) {
                 case Keys.Insert:
                 case Keys.Delete:
                 case Keys.PageUp:
@@ -43,12 +41,16 @@ namespace ManagedWinapi
         /// <summary>
         /// The state of this key, as seen by this application.
         /// </summary>
-        public short State { get { return GetKeyState((short)key); } }
+        public short State {
+            get { return GetKeyState((short) key); }
+        }
 
         /// <summary>
         /// The global state of this key.
         /// </summary>
-        public short AsyncState { get { return GetAsyncKeyState((short)key); } }
+        public short AsyncState {
+            get { return GetAsyncKeyState((short) key); }
+        }
 
         /// <summary>
         /// Press this key and release it.
@@ -64,7 +66,7 @@ namespace ManagedWinapi
         /// </summary>
         public void Press()
         {
-            keybd_event((byte)key, (byte)MapVirtualKey((int)key, 0), extended ? (uint)0x1 : 0x0, UIntPtr.Zero);
+            keybd_event((byte) key, (byte) MapVirtualKey((int) key, 0), extended ? (uint) 0x1 : 0x0, UIntPtr.Zero);
         }
 
         /// <summary>
@@ -72,33 +74,29 @@ namespace ManagedWinapi
         /// </summary>
         public void Release()
         {
-            keybd_event((byte)key, (byte)MapVirtualKey((int)key, 0), extended ? (uint)0x3 : 0x2, UIntPtr.Zero);
+            keybd_event((byte) key, (byte) MapVirtualKey((int) key, 0), extended ? (uint) 0x3 : 0x2, UIntPtr.Zero);
         }
 
         /// <summary>
         /// Determine the name of a key in the current keyboard layout.
         /// </summary>
         /// <returns>The key's name</returns>
-        public string KeyName
-        {
-            get
-            {
+        public string KeyName {
+            get {
                 StringBuilder sb = new StringBuilder(512);
-                int scancode = MapVirtualKey((int)key, 0);
+                int scancode = MapVirtualKey((int) key, 0);
                 if (extended)
                     scancode += 0x100;
                 GetKeyNameText(scancode << 16, sb, sb.Capacity);
-                if (sb.Length == 0)
-                {
-                    switch (key)
-                    {
+                if (sb.Length == 0) {
+                    switch (key) {
                         case Keys.BrowserBack:
                             sb.Append("Back");
                             break;
                         case Keys.BrowserForward:
                             sb.Append("Forward");
                             break;
-                        case (Keys)19:
+                        case (Keys) 19:
                             sb.Append("Break");
                             break;
                         case Keys.Apps:
@@ -113,6 +111,7 @@ namespace ManagedWinapi
                             break;
                     }
                 }
+
                 return sb.ToString();
             }
         }
@@ -123,7 +122,7 @@ namespace ManagedWinapi
         /// </summary>
         public static void InjectKeyboardEvent(Keys key, byte scanCode, uint flags, UIntPtr extraInfo)
         {
-            keybd_event((byte)key, scanCode, flags, extraInfo);
+            keybd_event((byte) key, scanCode, flags, extraInfo);
         }
 
         /// <summary>
@@ -142,21 +141,22 @@ namespace ManagedWinapi
 
         [DllImport("user32.dll")]
         private static extern void keybd_event(byte bVk, byte bScan, uint dwFlags,
-           UIntPtr dwExtraInfo);
+            UIntPtr dwExtraInfo);
 
         [DllImport("user32.dll")]
         static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint dwData,
-           UIntPtr dwExtraInfo);
+            UIntPtr dwExtraInfo);
 
         [DllImport("user32.dll")]
         static extern int GetKeyNameText(int lParam, [Out] StringBuilder lpString,
-           int nSize);
+            int nSize);
 
         [DllImport("user32.dll")]
         static extern int MapVirtualKey(int uCode, int uMapType);
 
         [DllImport("user32.dll")]
         static extern short GetAsyncKeyState(int vKey);
+
         #endregion
     }
 }

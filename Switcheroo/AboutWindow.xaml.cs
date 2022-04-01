@@ -23,10 +23,9 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Documents;
 
-namespace Switcheroo
-{
-    public partial class AboutWindow : Window
-    {
+
+namespace Switcheroo {
+    public partial class AboutWindow : Window {
         public AboutWindow()
         {
             InitializeComponent();

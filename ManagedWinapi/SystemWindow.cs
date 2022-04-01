@@ -17,6 +17,7 @@
  * http://www.gnu.org/licenses/lgpl.html or write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -27,15 +28,14 @@ using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System.Windows.Forms;
 
-namespace ManagedWinapi.Windows
-{
+
+namespace ManagedWinapi.Windows {
     /// <summary>
     /// Window Style Flags. The original constants started with WS_.
     /// </summary>
     /// <seealso cref="SystemWindow.Style"/>
     [Flags]
-    public enum WindowStyleFlags : long
-    {
+    public enum WindowStyleFlags : long {
         /// <summary>
         /// WS_OVERLAPPED
         /// </summary>
@@ -44,7 +44,7 @@ namespace ManagedWinapi.Windows
         /// <summary>
         /// WS_POPUP
         /// </summary>
-        POPUP = unchecked((int)0x80000000),
+        POPUP = unchecked((int) 0x80000000),
 
         /// <summary>
         /// WS_CHILD
@@ -183,8 +183,7 @@ namespace ManagedWinapi.Windows
     /// </summary>
     /// <seealso cref="SystemWindow.ExtendedStyle"/>
     [Flags]
-    public enum WindowExStyleFlags : uint
-    {
+    public enum WindowExStyleFlags : uint {
         /// <summary>
         /// Specifies that a window created with this style accepts drag-drop files.
         /// </summary>
@@ -299,49 +298,34 @@ namespace ManagedWinapi.Windows
     /// <summary>
     /// Represents any window used by Windows, including those from other applications.
     /// </summary>
-    public class SystemWindow
-    {
-
-        private static readonly Predicate<SystemWindow> ALL = delegate { return true; };
+    public class SystemWindow {
+        private static readonly Predicate<SystemWindow> ALL = delegate {
+            return true;
+        };
 
         private IntPtr _hwnd;
 
         /// <summary>
         /// Allows getting the current foreground window and setting it.
         /// </summary>
-        public static SystemWindow ForegroundWindow
-        {
-            get
-            {
-                return new SystemWindow(GetForegroundWindow());
-            }
-            set
-            {
-                SetForegroundWindow(value.HWnd);
-            }
+        public static SystemWindow ForegroundWindow {
+            get { return new SystemWindow(GetForegroundWindow()); }
+            set { SetForegroundWindow(value.HWnd); }
         }
 
         /// <summary>
         /// The Desktop window, i. e. the window that covers the
         /// complete desktop.
         /// </summary>
-        public static SystemWindow DesktopWindow
-        {
-            get
-            {
-                return new SystemWindow(GetDesktopWindow());
-            }
+        public static SystemWindow DesktopWindow {
+            get { return new SystemWindow(GetDesktopWindow()); }
         }
 
         /// <summary>
         /// Returns all available toplevel windows.
         /// </summary>
-        public static SystemWindow[] AllToplevelWindows
-        {
-            get
-            {
-                return FilterToplevelWindows(new Predicate<SystemWindow>(ALL));
-            }
+        public static SystemWindow[] AllToplevelWindows {
+            get { return FilterToplevelWindows(new Predicate<SystemWindow>(ALL)); }
         }
 
         /// <summary>
@@ -352,8 +336,7 @@ namespace ManagedWinapi.Windows
         public static SystemWindow[] FilterToplevelWindows(Predicate<SystemWindow> predicate)
         {
             List<SystemWindow> wnds = new List<SystemWindow>();
-            EnumWindows(new EnumWindowsProc(delegate(IntPtr hwnd, IntPtr lParam)
-            {
+            EnumWindows(new EnumWindowsProc(delegate(IntPtr hwnd, IntPtr lParam) {
                 SystemWindow tmp = new SystemWindow(hwnd);
                 if (predicate(tmp))
                     wnds.Add(tmp);
@@ -375,10 +358,10 @@ namespace ManagedWinapi.Windows
         public static SystemWindow FromPoint(int x, int y)
         {
             IntPtr hwnd = WindowFromPoint(new POINT(x, y));
-            if (hwnd.ToInt64() == 0)
-            {
+            if (hwnd.ToInt64() == 0) {
                 return null;
             }
+
             return new SystemWindow(hwnd);
         }
 
@@ -402,21 +385,18 @@ namespace ManagedWinapi.Windows
             int area;
             area = getArea(sw);
             SystemWindow result = sw;
-            foreach (SystemWindow w in sw.AllDescendantWindows)
-            {
-                if (w.Visible && (w.Enabled || !enabledOnly))
-                {
-                    if (w.Rectangle.ToRectangle().Contains(x, y))
-                    {
+            foreach (SystemWindow w in sw.AllDescendantWindows) {
+                if (w.Visible && (w.Enabled || !enabledOnly)) {
+                    if (w.Rectangle.ToRectangle().Contains(x, y)) {
                         int ar2 = getArea(w);
-                        if (ar2 <= area)
-                        {
+                        if (ar2 <= area) {
                             area = ar2;
                             result = w;
                         }
                     }
                 }
             }
+
             return result;
         }
 
@@ -447,23 +427,15 @@ namespace ManagedWinapi.Windows
         /// <summary>
         /// Return all descendant windows (child windows and their descendants).
         /// </summary>
-        public SystemWindow[] AllDescendantWindows
-        {
-            get
-            {
-                return FilterDescendantWindows(false, ALL);
-            }
+        public SystemWindow[] AllDescendantWindows {
+            get { return FilterDescendantWindows(false, ALL); }
         }
 
         /// <summary>
         /// Return all direct child windows.
         /// </summary>
-        public SystemWindow[] AllChildWindows
-        {
-            get
-            {
-                return FilterDescendantWindows(true, ALL);
-            }
+        public SystemWindow[] AllChildWindows {
+            get { return FilterDescendantWindows(true, ALL); }
         }
 
         /// <summary>
@@ -475,14 +447,13 @@ namespace ManagedWinapi.Windows
         public SystemWindow[] FilterDescendantWindows(bool directOnly, Predicate<SystemWindow> predicate)
         {
             List<SystemWindow> wnds = new List<SystemWindow>();
-            EnumChildWindows(_hwnd, delegate(IntPtr hwnd, IntPtr lParam)
-            {
+            EnumChildWindows(_hwnd, delegate(IntPtr hwnd, IntPtr lParam) {
                 SystemWindow tmp = new SystemWindow(hwnd);
                 bool add = true;
-                if (directOnly)
-                {
+                if (directOnly) {
                     add = tmp.Parent._hwnd == _hwnd;
                 }
+
                 if (add && predicate(tmp))
                     wnds.Add(tmp);
                 return 1;
@@ -493,24 +464,21 @@ namespace ManagedWinapi.Windows
         /// <summary>
         /// The Window handle of this window.
         /// </summary>
-        public IntPtr HWnd { get { return _hwnd; } }
+        public IntPtr HWnd {
+            get { return _hwnd; }
+        }
 
         /// <summary>
         /// The title of this window (by the <c>GetWindowText</c> API function).
         /// </summary>
-        public string Title
-        {
-            get
-            {
+        public string Title {
+            get {
                 StringBuilder sb = new StringBuilder(GetWindowTextLength(_hwnd) + 1);
                 GetWindowText(_hwnd, sb, sb.Capacity);
                 return sb.ToString();
             }
 
-            set
-            {
-                SetWindowText(_hwnd, value);
-            }
+            set { SetWindowText(_hwnd, value); }
         }
 
         /// <summary>
@@ -518,10 +486,8 @@ namespace ManagedWinapi.Windows
         /// For child windows of other applications, this is more reliable
         /// than the <see cref="Title"/> function.
         /// </summary>
-        public string Text
-        {
-            get
-            {
+        public string Text {
+            get {
                 int length = SendGetMessage(WM_GETTEXTLENGTH);
                 StringBuilder sb = new StringBuilder(length + 1);
                 SendMessage(new HandleRef(this, HWnd), WM_GETTEXT, new IntPtr(sb.Capacity), sb);
@@ -533,19 +499,16 @@ namespace ManagedWinapi.Windows
         /// The name of the window class (by the <c>GetClassName</c> API function).
         /// This class has nothing to do with classes in C# or other .NET languages.
         /// </summary>
-        public string ClassName
-        {
-            get
-            {
+        public string ClassName {
+            get {
                 int length = 64;
-                while (true)
-                {
+                while (true) {
                     StringBuilder sb = new StringBuilder(length);
                     ApiHelper.FailIfZero(GetClassName(_hwnd, sb, sb.Capacity));
-                    if (sb.Length != length - 1)
-                    {
+                    if (sb.Length != length - 1) {
                         return sb.ToString();
                     }
+
                     length *= 2;
                 }
             }
@@ -555,32 +518,21 @@ namespace ManagedWinapi.Windows
         /// Whether this window is currently visible. A window is visible if its 
         /// and all ancestor's visibility flags are true.
         /// </summary>
-        public bool Visible
-        {
-            get
-            {
-                return IsWindowVisible(_hwnd);
-            }
+        public bool Visible {
+            get { return IsWindowVisible(_hwnd); }
         }
 
         /// <summary>
         /// Whether this window always appears above all other windows
         /// that do not have this property set to true.
         /// </summary>
-        public bool TopMost
-        {
-            get
-            {
-                return (ExtendedStyle & WindowExStyleFlags.TOPMOST) != 0;
-            }
-            set
-            {
-                if (value)
-                {
+        public bool TopMost {
+            get { return (ExtendedStyle & WindowExStyleFlags.TOPMOST) != 0; }
+            set {
+                if (value) {
                     SetWindowPos(_hwnd, new IntPtr(-1), 0, 0, 0, 0, 3);
                 }
-                else
-                {
+                else {
                     SetWindowPos(_hwnd, new IntPtr(-2), 0, 0, 0, 0, 3);
                 }
             }
@@ -589,57 +541,40 @@ namespace ManagedWinapi.Windows
         /// <summary>
         /// Whether this window is currently enabled (able to accept keyboard input).
         /// </summary>
-        public bool Enabled
-        {
-            get
-            {
-                return IsWindowEnabled(_hwnd);
-            }
-            set
-            {
-                EnableWindow(_hwnd, value);
+        public bool Enabled {
+            get { return IsWindowEnabled(_hwnd); }
+            set { EnableWindow(_hwnd, value); }
+        }
+
+        private bool _isClosed = false;
+        public bool IsClosed {
+            get {
+                _isClosed = _isClosed || GetClassNameFails();
+                return _isClosed;
             }
         }
 
-		private bool _isClosed = false;
-		public bool IsClosed
-		{
-			get
-			{
-				_isClosed = _isClosed || GetClassNameFails();
-				return _isClosed;
-			}
-		}
+        private bool GetClassNameFails()
+        {
+            StringBuilder builder = new StringBuilder(2);
+            return GetClassName(HWnd, builder, builder.Capacity) == 0;
+        }
 
-		private bool GetClassNameFails()
-		{
-			StringBuilder builder = new StringBuilder( 2 );
-			return GetClassName( HWnd, builder, builder.Capacity ) == 0;
-		}
-
-		public bool IsClosedOrHidden
-		{
-			get { return IsClosed || !Visible; }
-		}
+        public bool IsClosedOrHidden {
+            get { return IsClosed || !Visible; }
+        }
 
         /// <summary>
         /// Returns or sets the visibility flag.
         /// </summary>
         /// <seealso cref="SystemWindow.Visible"/>
-        public bool VisibilityFlag
-        {
-            get
-            {
-                return (Style & WindowStyleFlags.VISIBLE) != 0;
-            }
-            set
-            {
-                if (value)
-                {
+        public bool VisibilityFlag {
+            get { return (Style & WindowStyleFlags.VISIBLE) != 0; }
+            set {
+                if (value) {
                     ShowWindow(_hwnd, 5);
                 }
-                else
-                {
+                else {
                     ShowWindow(_hwnd, 0);
                 }
             }
@@ -648,44 +583,25 @@ namespace ManagedWinapi.Windows
         /// <summary>
         /// This window's style flags.
         /// </summary>
-        public WindowStyleFlags Style
-        {
-            get
-            {
-                return (WindowStyleFlags)(long)GetWindowLongPtr(_hwnd, (int)(GWL.GWL_STYLE));
-            }
-            set
-            {
-                SetWindowLong(_hwnd, (int)GWL.GWL_STYLE, (int)value);
-            }
-
+        public WindowStyleFlags Style {
+            get { return (WindowStyleFlags) (long) GetWindowLongPtr(_hwnd, (int) (GWL.GWL_STYLE)); }
+            set { SetWindowLong(_hwnd, (int) GWL.GWL_STYLE, (int) value); }
         }
 
         /// <summary>
         /// This window's extended style flags.
         /// </summary>
-        public WindowExStyleFlags ExtendedStyle
-        {
-            get
-            {
-                return (WindowExStyleFlags)GetWindowLongPtr(_hwnd, (int)(GWL.GWL_EXSTYLE));
-            }
-            set
-            {
-                SetWindowLong(_hwnd, (int)GWL.GWL_EXSTYLE, (int)value);
-            }
+        public WindowExStyleFlags ExtendedStyle {
+            get { return (WindowExStyleFlags) GetWindowLongPtr(_hwnd, (int) (GWL.GWL_EXSTYLE)); }
+            set { SetWindowLong(_hwnd, (int) GWL.GWL_EXSTYLE, (int) value); }
         }
 
         /// <summary>
         /// This window's parent. A dialog's parent is its owner, a component's parent is
         /// the window that contains it.
         /// </summary>
-        public SystemWindow Parent
-        {
-            get
-            {
-                return new SystemWindow(GetParent(_hwnd));
-            }
+        public SystemWindow Parent {
+            get { return new SystemWindow(GetParent(_hwnd)); }
         }
 
         /// <summary>
@@ -693,10 +609,8 @@ namespace ManagedWinapi.Windows
         /// parents, like dialog owners, do not have the window as its child. In that case,
         /// <c>null</c> will be returned.
         /// </summary>
-        public SystemWindow ParentSymmetric
-        {
-            get
-            {
+        public SystemWindow ParentSymmetric {
+            get {
                 SystemWindow result = Parent;
                 if (!this.IsDescendantOf(result)) result = null;
                 return result;
@@ -706,11 +620,9 @@ namespace ManagedWinapi.Windows
         /// <summary>
         /// The window's owner
         /// </summary>
-        public SystemWindow Owner
-        {
-            get
-            {
-                var owner = GetWindow(HWnd, (uint)GetWindow_Cmd.GW_OWNER);
+        public SystemWindow Owner {
+            get {
+                var owner = GetWindow(HWnd, (uint) GetWindow_Cmd.GW_OWNER);
                 return new SystemWindow(owner);
             }
         }
@@ -718,18 +630,15 @@ namespace ManagedWinapi.Windows
         /// <summary>
         /// The window's position inside its parent or on the screen.
         /// </summary>
-        public RECT Position
-        {
-            get
-            {
+        public RECT Position {
+            get {
                 WINDOWPLACEMENT wp = new WINDOWPLACEMENT();
                 wp.length = Marshal.SizeOf(wp);
                 GetWindowPlacement(_hwnd, ref wp);
                 return wp.rcNormalPosition;
             }
 
-            set
-            {
+            set {
                 WINDOWPLACEMENT wp = new WINDOWPLACEMENT();
                 wp.length = Marshal.SizeOf(wp);
                 GetWindowPlacement(_hwnd, ref wp);
@@ -741,15 +650,10 @@ namespace ManagedWinapi.Windows
         /// <summary>
         /// The window's location inside its parent or on the screen.
         /// </summary>
-        public Point Location
-        {
-            get
-            {
-                return Position.Location;
-            }
+        public Point Location {
+            get { return Position.Location; }
 
-            set
-            {
+            set {
                 WINDOWPLACEMENT wp = new WINDOWPLACEMENT();
                 wp.length = Marshal.SizeOf(wp);
                 GetWindowPlacement(_hwnd, ref wp);
@@ -764,15 +668,10 @@ namespace ManagedWinapi.Windows
         /// <summary>
         /// The window's size.
         /// </summary>
-        public Size Size
-        {
-            get
-            {
-                return Position.Size;
-            }
+        public Size Size {
+            get { return Position.Size; }
 
-            set
-            {
+            set {
                 WINDOWPLACEMENT wp = new WINDOWPLACEMENT();
                 wp.length = Marshal.SizeOf(wp);
                 GetWindowPlacement(_hwnd, ref wp);
@@ -786,10 +685,8 @@ namespace ManagedWinapi.Windows
         /// The window's position in absolute screen coordinates. Use 
         /// <see cref="Position"/> if you want to use the relative position.
         /// </summary>
-        public RECT Rectangle
-        {
-            get
-            {
+        public RECT Rectangle {
+            get {
                 RECT r = new RECT();
                 GetWindowRect(_hwnd, out r);
                 return r;
@@ -809,10 +706,8 @@ namespace ManagedWinapi.Windows
         /// <summary>
         /// The process which created this window.
         /// </summary>
-        public Process Process
-        {
-            get
-            {
+        public Process Process {
+            get {
                 int pid;
                 GetWindowThreadProcessId(HWnd, out pid);
                 return Process.GetProcessById(pid);
@@ -822,10 +717,8 @@ namespace ManagedWinapi.Windows
         /// <summary>
         /// The ID of the process which created this window.
         /// </summary>
-        public int ProcessId
-        {
-            get
-            {
+        public int ProcessId {
+            get {
                 int pid;
                 GetWindowThreadProcessId(HWnd, out pid);
                 return pid;
@@ -837,10 +730,8 @@ namespace ManagedWinapi.Windows
         /// <summary>
         /// The name of the process which created this window.
         /// </summary>
-        public string ProcessName
-        {
-            get
-            {
+        public string ProcessName {
+            get {
                 IntPtr handle = OpenProcess(ProcessRights.PROCESS_QUERY_INFORMATION | ProcessRights.PROCESS_VM_READ, false, ProcessId);
                 int exeBufferSize = 512;
                 StringBuilder exeBuffer = new StringBuilder(exeBufferSize);
@@ -852,16 +743,14 @@ namespace ManagedWinapi.Windows
         /// <summary>
         ///  The Thread which created this window.
         /// </summary>
-        public ProcessThread Thread
-        {
-            get
-            {
+        public ProcessThread Thread {
+            get {
                 int pid;
                 int tid = GetWindowThreadProcessId(HWnd, out pid);
-                foreach (ProcessThread t in Process.GetProcessById(pid).Threads)
-                {
+                foreach (ProcessThread t in Process.GetProcessById(pid).Threads) {
                     if (t.Id == tid) return t;
                 }
+
                 throw new Exception("Thread not found");
             }
         }
@@ -869,25 +758,20 @@ namespace ManagedWinapi.Windows
         /// <summary>
         /// Whether this window is minimized or maximized.
         /// </summary>
-        public FormWindowState WindowState
-        {
-            get
-            {
+        public FormWindowState WindowState {
+            get {
                 WINDOWPLACEMENT wp = new WINDOWPLACEMENT();
                 wp.length = Marshal.SizeOf(wp);
                 GetWindowPlacement(HWnd, ref wp);
-                switch (wp.showCmd % 4)
-                {
+                switch (wp.showCmd % 4) {
                     case 2: return FormWindowState.Minimized;
                     case 3: return FormWindowState.Maximized;
                     default: return FormWindowState.Normal;
                 }
             }
-            set
-            {
+            set {
                 int showCommand;
-                switch (value)
-                {
+                switch (value) {
                     case FormWindowState.Normal:
                         showCommand = 1;
                         break;
@@ -899,6 +783,7 @@ namespace ManagedWinapi.Windows
                         break;
                     default: return;
                 }
+
                 ShowWindow(HWnd, showCommand);
             }
         }
@@ -906,24 +791,16 @@ namespace ManagedWinapi.Windows
         /// <summary>
         /// Whether this window can be moved on the screen by the user.
         /// </summary>
-        public bool Movable
-        {
-            get
-            {
-                return (Style & WindowStyleFlags.SYSMENU) != 0;
-            }
+        public bool Movable {
+            get { return (Style & WindowStyleFlags.SYSMENU) != 0; }
         }
 
         /// <summary>
         /// Whether this window can be resized by the user. Resizing a window that
         /// cannot be resized by the user works, but may be irritating to the user.
         /// </summary>
-        public bool Resizable
-        {
-            get
-            {
-                return (Style & WindowStyleFlags.THICKFRAME) != 0;
-            }
+        public bool Resizable {
+            get { return (Style & WindowStyleFlags.THICKFRAME) != 0; }
         }
 
         /// <summary>
@@ -934,10 +811,8 @@ namespace ManagedWinapi.Windows
         /// function and use the <see cref="SystemWindow.Rectangle"/> property for
         /// the range.
         /// </summary>
-        public Image Image
-        {
-            get
-            {
+        public Image Image {
+            get {
                 Bitmap bmp = new Bitmap(Position.Width, Position.Height);
                 Graphics g = Graphics.FromImage(bmp);
                 IntPtr pTarget = g.GetHdc();
@@ -957,20 +832,17 @@ namespace ManagedWinapi.Windows
         /// <summary>
         /// The window's visible region.
         /// </summary>
-        public Region Region
-        {
-            get
-            {
+        public Region Region {
+            get {
                 IntPtr rgn = CreateRectRgn(0, 0, 0, 0);
                 int r = GetWindowRgn(HWnd, rgn);
-                if (r == (int)GetWindowRegnReturnValues.ERROR)
-                {
+                if (r == (int) GetWindowRegnReturnValues.ERROR) {
                     return null;
                 }
+
                 return Region.FromHrgn(rgn);
             }
-            set
-            {
+            set {
                 Bitmap bmp = new Bitmap(1, 1);
                 Graphics g = Graphics.FromImage(bmp);
                 SetWindowRgn(HWnd, value.GetHrgn(g), true);
@@ -983,39 +855,26 @@ namespace ManagedWinapi.Windows
         /// a text field. May be used for different purpose by other
         /// controls.
         /// </summary>
-        public char PasswordCharacter
-        {
-            get
-            {
-                return (char)SendGetMessage(EM_GETPASSWORDCHAR);
-            }
-            set
-            {
-                SendSetMessage(EM_SETPASSWORDCHAR, value);
-            }
+        public char PasswordCharacter {
+            get { return (char) SendGetMessage(EM_GETPASSWORDCHAR); }
+            set { SendSetMessage(EM_SETPASSWORDCHAR, value); }
         }
 
         /// <summary>
         /// The ID of a control within a dialog. This is used in
         /// WM_COMMAND messages to distinguish which control sent the command.
         /// </summary>
-        public int DialogID
-        {
-            get
-            {
-                return GetWindowLong32(_hwnd, (int)GWL.GWL_ID);
-            }
+        public int DialogID {
+            get { return GetWindowLong32(_hwnd, (int) GWL.GWL_ID); }
         }
 
         /// <summary>
         /// Get the window that is below this window in the Z order,
         /// or null if this is the lowest window.
         /// </summary>
-        public SystemWindow WindowBelow
-        {
-            get
-            {
-                IntPtr res = GetWindow(HWnd, (uint)GetWindow_Cmd.GW_HWNDNEXT);
+        public SystemWindow WindowBelow {
+            get {
+                IntPtr res = GetWindow(HWnd, (uint) GetWindow_Cmd.GW_HWNDNEXT);
                 if (res == IntPtr.Zero) return null;
                 return new SystemWindow(res);
             }
@@ -1025,11 +884,9 @@ namespace ManagedWinapi.Windows
         /// Get the window that is above this window in the Z order,
         /// or null, if this is the foreground window.
         /// </summary>
-        public SystemWindow WindowAbove
-        {
-            get
-            {
-                IntPtr res = GetWindow(HWnd, (uint)GetWindow_Cmd.GW_HWNDPREV);
+        public SystemWindow WindowAbove {
+            get {
+                IntPtr res = GetWindow(HWnd, (uint) GetWindow_Cmd.GW_HWNDPREV);
                 if (res == IntPtr.Zero) return null;
                 return new SystemWindow(res);
             }
@@ -1042,12 +899,10 @@ namespace ManagedWinapi.Windows
         /// the client area or for the full window.</param>
         public WindowDeviceContext GetDeviceContext(bool clientAreaOnly)
         {
-            if (clientAreaOnly)
-            {
+            if (clientAreaOnly) {
                 return new WindowDeviceContext(this, GetDC(_hwnd));
             }
-            else
-            {
+            else {
                 return new WindowDeviceContext(this, GetWindowDC(_hwnd));
             }
         }
@@ -1056,27 +911,16 @@ namespace ManagedWinapi.Windows
         /// The content of this window. Is only supported for some
         /// kinds of controls (like text or list boxes).
         /// </summary>
-        public WindowContent Content
-        {
-            get
-            {
-                return WindowContentParser.Parse(this);
-            }
+        public WindowContent Content {
+            get { return WindowContentParser.Parse(this); }
         }
 
         /// <summary>
         /// Whether this control, which is a check box or radio button, is checked.
         /// </summary>
-        public CheckState CheckState
-        {
-            get
-            {
-                return (CheckState)SendGetMessage(BM_GETCHECK);
-            }
-            set
-            {
-                SendSetMessage(BM_SETCHECK, (uint)value);
-            }
+        public CheckState CheckState {
+            get { return (CheckState) SendGetMessage(BM_GETCHECK); }
+            set { SendSetMessage(BM_SETCHECK, (uint) value); }
         }
 
         /// <summary>
@@ -1127,10 +971,8 @@ namespace ManagedWinapi.Windows
         {
             RECT rect;
             GetWindowRect(_hwnd, out rect);
-            using (WindowDeviceContext windowDC = GetDeviceContext(false))
-            {
-                using (Graphics g = windowDC.CreateGraphics())
-                {
+            using (WindowDeviceContext windowDC = GetDeviceContext(false)) {
+                using (Graphics g = windowDC.CreateGraphics()) {
                     g.DrawRectangle(new Pen(Color.Red, 4), 0, 0, rect.Right - rect.Left, rect.Bottom - rect.Top);
                 }
             }
@@ -1144,8 +986,7 @@ namespace ManagedWinapi.Windows
             // By using parent, we get better results in refreshing old drawing window area.
             IntPtr hwndToRefresh = this._hwnd;
             SystemWindow parentWindow = this.ParentSymmetric;
-            if (parentWindow != null)
-            {
+            if (parentWindow != null) {
                 hwndToRefresh = parentWindow._hwnd;
             }
 
@@ -1173,10 +1014,10 @@ namespace ManagedWinapi.Windows
         ///
         public override bool Equals(System.Object obj)
         {
-            if (obj == null)
-            {
+            if (obj == null) {
                 return false;
             }
+
             SystemWindow sw = obj as SystemWindow;
             return Equals(sw);
         }
@@ -1184,10 +1025,10 @@ namespace ManagedWinapi.Windows
         ///
         public bool Equals(SystemWindow sw)
         {
-            if ((object)sw == null)
-            {
+            if ((object) sw == null) {
                 return false;
             }
+
             return _hwnd == sw._hwnd;
         }
 
@@ -1195,7 +1036,7 @@ namespace ManagedWinapi.Windows
         public override int GetHashCode()
         {
             // avoid exceptions
-            return unchecked((int)_hwnd.ToInt64());
+            return unchecked((int) _hwnd.ToInt64());
         }
 
         /// <summary>
@@ -1203,14 +1044,14 @@ namespace ManagedWinapi.Windows
         /// </summary>
         public static bool operator ==(SystemWindow a, SystemWindow b)
         {
-            if (System.Object.ReferenceEquals(a, b))
-            {
+            if (System.Object.ReferenceEquals(a, b)) {
                 return true;
             }
-            if (((object)a == null) || ((object)b == null))
-            {
+
+            if (((object) a == null) || ((object) b == null)) {
                 return false;
             }
+
             return a._hwnd == b._hwnd;
         }
 
@@ -1274,8 +1115,7 @@ namespace ManagedWinapi.Windows
         [DllImport("user32.dll", EntryPoint = "GetWindowLongPtr")]
         private static extern IntPtr GetWindowLongPtr64(IntPtr hWnd, int nIndex);
 
-        private enum GWL : int
-        {
+        private enum GWL : int {
             GWL_WNDPROC = (-4),
             GWL_HINSTANCE = (-6),
             GWL_HWNDPARENT = (-8),
@@ -1295,8 +1135,7 @@ namespace ManagedWinapi.Windows
         static extern bool IsChild(IntPtr hWndParent, IntPtr hWnd);
 
         [StructLayout(LayoutKind.Sequential)]
-        private struct WINDOWPLACEMENT
-        {
+        private struct WINDOWPLACEMENT {
             public int length;
             public int flags;
             public int showCmd;
@@ -1307,11 +1146,11 @@ namespace ManagedWinapi.Windows
 
         [DllImport("user32.dll")]
         static extern bool GetWindowPlacement(IntPtr hWnd,
-           ref WINDOWPLACEMENT lpwndpl);
+            ref WINDOWPLACEMENT lpwndpl);
 
         [DllImport("user32.dll")]
         static extern bool SetWindowPlacement(IntPtr hWnd,
-           [In] ref WINDOWPLACEMENT lpwndpl);
+            [In] ref WINDOWPLACEMENT lpwndpl);
 
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -1331,7 +1170,7 @@ namespace ManagedWinapi.Windows
 
         [DllImport("gdi32.dll")]
         static extern IntPtr CreateRectRgn(int nLeftRect, int nTopRect, int nRightRect,
-           int nBottomRect);
+            int nBottomRect);
 
         [DllImport("user32.dll")]
         static extern int GetWindowRgn(IntPtr hWnd, IntPtr hRgn);
@@ -1341,7 +1180,7 @@ namespace ManagedWinapi.Windows
 
         [DllImport("gdi32.dll")]
         static extern bool BitBlt(IntPtr hObject, int nXDest, int nYDest, int nWidth,
-           int nHeight, IntPtr hObjSource, int nXSrc, int nYSrc, int dwRop);
+            int nHeight, IntPtr hObjSource, int nXSrc, int nYSrc, int dwRop);
 
         [DllImport("user32.dll", SetLastError = true)]
         static extern bool PrintWindow(IntPtr hwnd, IntPtr hDC, uint nFlags);
@@ -1364,8 +1203,7 @@ namespace ManagedWinapi.Windows
         [DllImport("gdi32.dll", ExactSpelling = true, SetLastError = true)]
         static extern bool DeleteObject(IntPtr hObject);
 
-        enum TernaryRasterOperations : uint
-        {
+        enum TernaryRasterOperations : uint {
             SRCCOPY = 0x00CC0020,
             SRCPAINT = 0x00EE0086,
             SRCAND = 0x008800C6,
@@ -1383,8 +1221,7 @@ namespace ManagedWinapi.Windows
             WHITENESS = 0x00FF0062
         }
 
-        enum GetWindowRegnReturnValues : int
-        {
+        enum GetWindowRegnReturnValues : int {
             ERROR = 0,
             NULLREGION = 1,
             SIMPLEREGION = 2,
@@ -1405,7 +1242,7 @@ namespace ManagedWinapi.Windows
 
         [DllImport("user32.dll")]
         private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X,
-           int Y, int cx, int cy, uint uFlags);
+            int Y, int cx, int cy, uint uFlags);
 
         [DllImport("user32.dll")]
         private static extern IntPtr GetWindow(IntPtr hWnd, uint uCmd);
@@ -1420,8 +1257,7 @@ namespace ManagedWinapi.Windows
 
         private IntPtr SC_CLOSE = new IntPtr(61536);
 
-        private enum GetWindow_Cmd
-        {
+        private enum GetWindow_Cmd {
             GW_HWNDFIRST = 0,
             GW_HWNDLAST = 1,
             GW_HWNDNEXT = 2,
@@ -1434,8 +1270,7 @@ namespace ManagedWinapi.Windows
         [DllImport("user32.dll")]
         private static extern bool InvalidateRect(IntPtr hWnd, IntPtr lpRect, bool bErase);
 
-        private enum RDW : uint
-        {
+        private enum RDW : uint {
             RDW_INVALIDATE = 0x0001,
             RDW_INTERNALPAINT = 0x0002,
             RDW_ERASE = 0x0004,
@@ -1457,8 +1292,7 @@ namespace ManagedWinapi.Windows
         [DllImport("user32.dll")]
         private static extern bool RedrawWindow(IntPtr hWnd, IntPtr lprcUpdate, IntPtr hrgnUpdate, RDW flags);
 
-        private enum ProcessRights
-        {
+        private enum ProcessRights {
             PROCESS_TERMINATE = 0x1,
             PROCESS_CREATE_THREAD = 0x2,
             PROCESS_SET_SESSIONID = 0x4,
@@ -1484,8 +1318,7 @@ namespace ManagedWinapi.Windows
     /// <summary>
     /// A device context of a window that allows you to draw onto that window.
     /// </summary>
-    public class WindowDeviceContext : IDisposable
-    {
+    public class WindowDeviceContext : IDisposable {
         IntPtr hDC;
         SystemWindow sw;
 
@@ -1498,7 +1331,9 @@ namespace ManagedWinapi.Windows
         /// <summary>
         /// The device context handle.
         /// </summary>
-        public IntPtr HDC { get { return hDC; } }
+        public IntPtr HDC {
+            get { return hDC; }
+        }
 
         /// <summary>
         /// Creates a Graphics object for this device context.
@@ -1513,8 +1348,7 @@ namespace ManagedWinapi.Windows
         /// </summary>
         public void Dispose()
         {
-            if (hDC != IntPtr.Zero)
-            {
+            if (hDC != IntPtr.Zero) {
                 ReleaseDC(sw.HWnd, hDC);
                 hDC = IntPtr.Zero;
             }
@@ -1523,5 +1357,4 @@ namespace ManagedWinapi.Windows
         [DllImport("user32.dll")]
         private static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
     }
-
 }

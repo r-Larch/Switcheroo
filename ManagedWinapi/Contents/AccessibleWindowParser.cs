@@ -17,21 +17,20 @@
  * http://www.gnu.org/licenses/lgpl.html or write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
 using ManagedWinapi.Accessibility;
 
-namespace ManagedWinapi.Windows.Contents
-{
+
+namespace ManagedWinapi.Windows.Contents {
     /// <summary>
     /// The content of an object that supports the Accessibility API 
     /// (used by screen readers and similar programs).
     /// </summary>
-    public class AccessibleWindowContent : WindowContent
-    {
-
+    public class AccessibleWindowContent : WindowContent {
         bool parsed = false;
         readonly string name;
         string menu, sysmenu, clientarea;
@@ -48,28 +47,23 @@ namespace ManagedWinapi.Windows.Contents
         }
 
         ///
-        public string ComponentType
-        {
+        public string ComponentType {
             get { return "AccessibleWindow"; }
         }
 
         ///
-        public string ShortDescription
-        {
-            get
-            {
+        public string ShortDescription {
+            get {
                 return name + " <AccessibleWindow:" +
-                    (hasSysMenu ? " SystemMenu" : "") +
-                    (hasMenu ? " Menu" : "") +
-                    (hasClientArea ? " ClientArea" : "") + ">";
+                       (hasSysMenu ? " SystemMenu" : "") +
+                       (hasMenu ? " Menu" : "") +
+                       (hasClientArea ? " ClientArea" : "") + ">";
             }
         }
 
         ///
-        public string LongDescription
-        {
-            get
-            {
+        public string LongDescription {
+            get {
                 ParseIfNeeded();
                 string result = ShortDescription + "\n";
                 if (sysmenu != null)
@@ -101,10 +95,8 @@ namespace ManagedWinapi.Windows.Contents
 
         private void ParseSubMenu(StringBuilder menuitems, SystemAccessibleObject sao, int depth)
         {
-            foreach (SystemAccessibleObject c in sao.Children)
-            {
-                if (c.RoleIndex == 11 || c.RoleIndex == 12)
-                {
+            foreach (SystemAccessibleObject c in sao.Children) {
+                if (c.RoleIndex == 11 || c.RoleIndex == 12) {
                     menuitems.Append(ListContent.Repeat('\t', depth) + c.Name + "\n");
                     ParseSubMenu(menuitems, c, depth + 1);
                 }
@@ -123,42 +115,39 @@ namespace ManagedWinapi.Windows.Contents
         {
             sb.Append("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
             sb.Append(ListContent.Repeat('*', depth) + " " + sao.ToString() + "\n");
-            try
-            {
+            try {
                 sb.Append("D: " + sao.Description + "\n");
             }
-            catch (COMException) { }
-            try
-            {
+            catch (COMException) {
+            }
+
+            try {
                 sb.Append("V: " + sao.Value + "\n");
             }
-            catch (COMException) { }
-            foreach (SystemAccessibleObject c in sao.Children)
-            {
+            catch (COMException) {
+            }
+
+            foreach (SystemAccessibleObject c in sao.Children) {
                 if (c.Window == sao.Window)
                     ParseClientAreaElement(sb, c, depth + 1);
             }
         }
 
         ///
-        public Dictionary<string, string> PropertyList
-        {
-            get
-            {
+        public Dictionary<string, string> PropertyList {
+            get {
                 Dictionary<string, string> result = new Dictionary<string, string>();
                 return result;
             }
         }
-
     }
 
-    class AccessibleWindowParser : WindowContentParser
-    {
+    class AccessibleWindowParser : WindowContentParser {
         internal override bool CanParseContent(SystemWindow sw)
         {
             return TestMenu(sw, AccessibleObjectID.OBJID_MENU) ||
-                TestMenu(sw, AccessibleObjectID.OBJID_SYSMENU) ||
-                TestClientArea(sw);
+                   TestMenu(sw, AccessibleObjectID.OBJID_SYSMENU) ||
+                   TestClientArea(sw);
         }
 
         internal override WindowContent ParseContent(SystemWindow sw)
@@ -172,15 +161,15 @@ namespace ManagedWinapi.Windows.Contents
 
         private bool TestClientArea(SystemWindow sw)
         {
-            try
-            {
+            try {
                 SystemAccessibleObject sao = SystemAccessibleObject.FromWindow(sw, AccessibleObjectID.OBJID_CLIENT);
-                foreach (SystemAccessibleObject c in sao.Children)
-                {
+                foreach (SystemAccessibleObject c in sao.Children) {
                     if (c.Window == sw) return true;
                 }
             }
-            catch (COMException) { }
+            catch (COMException) {
+            }
+
             return false;
         }
 

@@ -29,10 +29,9 @@ using Application = System.Windows.Application;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
 
-namespace Switcheroo
-{
-    public partial class OptionsWindow : Window
-    {
+
+namespace Switcheroo {
+    public partial class OptionsWindow : Window {
         private readonly HotKey _hotkey;
         private HotkeyViewModel _hotkeyViewModel;
 
@@ -41,19 +40,16 @@ namespace Switcheroo
             InitializeComponent();
 
             // Show what's already selected     
-            _hotkey = (HotKey)Application.Current.Properties["hotkey"];
+            _hotkey = (HotKey) Application.Current.Properties["hotkey"];
 
-            try
-            {
+            try {
                 _hotkey.LoadSettings();
             }
-            catch (HotkeyAlreadyInUseException)
-            {
+            catch (HotkeyAlreadyInUseException) {
             }
 
-            _hotkeyViewModel = new HotkeyViewModel
-            {
-                KeyCode = KeyInterop.KeyFromVirtualKey((int)_hotkey.KeyCode),
+            _hotkeyViewModel = new HotkeyViewModel {
+                KeyCode = KeyInterop.KeyFromVirtualKey((int) _hotkey.KeyCode),
                 Alt = _hotkey.Alt,
                 Ctrl = _hotkey.Ctrl,
                 Windows = _hotkey.WindowsKey,
@@ -68,7 +64,6 @@ namespace Switcheroo
             AutoSwitch.IsEnabled = Settings.Default.AltTabHook;
             RunAsAdministrator.IsChecked = Settings.Default.RunAsAdmin;
             Theme.Text = Settings.Default.Theme;
-
         }
 
         private void Cancel_Click(object sender, RoutedEventArgs e)
@@ -80,25 +75,22 @@ namespace Switcheroo
         {
             var closeOptionsWindow = true;
 
-            try
-            {
+            try {
                 _hotkey.Enabled = false;
 
-                if (Settings.Default.EnableHotKey)
-                {
+                if (Settings.Default.EnableHotKey) {
                     // Change the active hotkey
                     _hotkey.Alt = _hotkeyViewModel.Alt;
                     _hotkey.Shift = _hotkeyViewModel.Shift;
                     _hotkey.Ctrl = _hotkeyViewModel.Ctrl;
                     _hotkey.WindowsKey = _hotkeyViewModel.Windows;
-                    _hotkey.KeyCode = (Keys)KeyInterop.VirtualKeyFromKey(_hotkeyViewModel.KeyCode);
+                    _hotkey.KeyCode = (Keys) KeyInterop.VirtualKeyFromKey(_hotkeyViewModel.KeyCode);
                     _hotkey.Enabled = true;
                 }
 
                 _hotkey.SaveSettings();
             }
-            catch (HotkeyAlreadyInUseException)
-            {
+            catch (HotkeyAlreadyInUseException) {
                 var boxText = "Sorry! The selected shortcut for activating Switcheroo is in use by another program. " +
                               "Please choose another.";
                 MessageBox.Show(boxText, "Shortcut already in use", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -112,8 +104,7 @@ namespace Switcheroo
             Settings.Default.Theme = Theme.Text;
             Settings.Default.Save();
 
-            if (closeOptionsWindow)
-            {
+            if (closeOptionsWindow) {
                 Close();
             }
         }
@@ -128,10 +119,9 @@ namespace Switcheroo
 
             // Ignore modifier keys
             if (key == Key.LeftShift || key == Key.RightShift
-                || key == Key.LeftCtrl || key == Key.RightCtrl
-                || key == Key.LeftAlt || key == Key.RightAlt
-                || key == Key.LWin || key == Key.RWin)
-            {
+                                     || key == Key.LeftCtrl || key == Key.RightCtrl
+                                     || key == Key.LeftAlt || key == Key.RightAlt
+                                     || key == Key.LWin || key == Key.RWin) {
                 return;
             }
 
@@ -148,9 +138,8 @@ namespace Switcheroo
             var previewText = previewHotkeyModel.ToString();
 
             // Jump to the next element if the user presses only the Tab key
-            if (previewText == "Tab")
-            {
-                ((UIElement)sender).MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+            if (previewText == "Tab") {
+                ((UIElement) sender).MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
                 return;
             }
 
@@ -158,8 +147,7 @@ namespace Switcheroo
             _hotkeyViewModel = previewHotkeyModel;
         }
 
-        private class HotkeyViewModel
-        {
+        private class HotkeyViewModel {
             public Key KeyCode { get; set; }
             public bool Shift { get; set; }
             public bool Alt { get; set; }
@@ -170,36 +158,30 @@ namespace Switcheroo
             {
                 var shortcutText = new StringBuilder();
 
-                if (Ctrl)
-                {
+                if (Ctrl) {
                     shortcutText.Append("Ctrl + ");
                 }
 
-                if (Shift)
-                {
+                if (Shift) {
                     shortcutText.Append("Shift + ");
                 }
 
-                if (Alt)
-                {
+                if (Alt) {
                     shortcutText.Append("Alt + ");
                 }
 
-                if (Windows)
-                {
+                if (Windows) {
                     shortcutText.Append("Win + ");
                 }
 
                 var keyString =
-                    KeyboardHelper.CodeToString((uint)KeyInterop.VirtualKeyFromKey(KeyCode)).ToUpper().Trim();
-                if (keyString.Length == 0)
-                {
+                    KeyboardHelper.CodeToString((uint) KeyInterop.VirtualKeyFromKey(KeyCode)).ToUpper().Trim();
+                if (keyString.Length == 0) {
                     keyString = new KeysConverter().ConvertToString(KeyCode);
                 }
 
                 // If the user presses "Escape" then show "Escape" :)
-                if (keyString == "\u001B")
-                {
+                if (keyString == "\u001B") {
                     keyString = "Escape";
                 }
 
@@ -216,12 +198,10 @@ namespace Switcheroo
 
         private void HotkeyPreview_OnLostFocus(object sender, RoutedEventArgs e)
         {
-            try
-            {
+            try {
                 _hotkey.Enabled = true;
             }
-            catch (HotkeyAlreadyInUseException)
-            {
+            catch (HotkeyAlreadyInUseException) {
                 // It is alright if the hotkey can't be reactivated
             }
         }

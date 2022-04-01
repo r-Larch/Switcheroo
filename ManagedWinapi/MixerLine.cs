@@ -17,18 +17,18 @@
  * http://www.gnu.org/licenses/lgpl.html or write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using ManagedWinapi.Windows;
 
-namespace ManagedWinapi.Audio.Mixer
-{
+
+namespace ManagedWinapi.Audio.Mixer {
     /// <summary>
     /// Represents a mixer line, either a source line or a destination line.
     /// </summary>
-    public abstract class MixerLine : IDisposable
-    {
+    public abstract class MixerLine : IDisposable {
         /// <summary>
         /// Occurs when this line changes.
         /// </summary>
@@ -52,14 +52,12 @@ namespace ManagedWinapi.Audio.Mixer
         /// <summary>
         /// All controls of this line.
         /// </summary>
-        public MixerControl[] Controls
-        {
-            get
-            {
-                if (controls == null)
-                {
+        public MixerControl[] Controls {
+            get {
+                if (controls == null) {
                     controls = MixerControl.GetControls(mixer, this, ControlCount);
                 }
+
                 return controls;
             }
         }
@@ -67,17 +65,14 @@ namespace ManagedWinapi.Audio.Mixer
         /// <summary>
         /// The volume control of this line, if it has one.
         /// </summary>
-        public FaderMixerControl VolumeControl
-        {
-            get
-            {
-                foreach (MixerControl c in Controls)
-                {
-                    if (c.ControlType == MixerControlType.MIXERCONTROL_CONTROLTYPE_VOLUME)
-                    {
-                        return (FaderMixerControl)c;
+        public FaderMixerControl VolumeControl {
+            get {
+                foreach (MixerControl c in Controls) {
+                    if (c.ControlType == MixerControlType.MIXERCONTROL_CONTROLTYPE_VOLUME) {
+                        return (FaderMixerControl) c;
                     }
                 }
+
                 return null;
             }
         }
@@ -85,97 +80,100 @@ namespace ManagedWinapi.Audio.Mixer
         /// <summary>
         /// The mute switch of this control, if it has one.
         /// </summary>
-        public BooleanMixerControl MuteSwitch
-        {
-            get
-            {
-                foreach (MixerControl c in Controls)
-                {
-                    if (c.ControlType == MixerControlType.MIXERCONTROL_CONTROLTYPE_MUTE)
-                    {
-                        return (BooleanMixerControl)c;
+        public BooleanMixerControl MuteSwitch {
+            get {
+                foreach (MixerControl c in Controls) {
+                    if (c.ControlType == MixerControlType.MIXERCONTROL_CONTROLTYPE_MUTE) {
+                        return (BooleanMixerControl) c;
                     }
                 }
-                return null;
 
+                return null;
             }
         }
 
         /// <summary>
         /// Gets the ID of this line.
         /// </summary>
-        public int Id { get { return line.dwLineID; } }
+        public int Id {
+            get { return line.dwLineID; }
+        }
 
         /// <summary>
         /// Gets the number of channels of this line.
         /// </summary>
-        public int ChannelCount { get { return line.cChannels; } }
+        public int ChannelCount {
+            get { return line.cChannels; }
+        }
 
         /// <summary>
         /// Gets the number of controls of this line.
         /// </summary>
-        public int ControlCount { get { return line.cControls; } }
+        public int ControlCount {
+            get { return line.cControls; }
+        }
 
         /// <summary>
         /// Gets the short name of this line;
         /// </summary>
-        public string ShortName { get { return line.szShortName; } }
+        public string ShortName {
+            get { return line.szShortName; }
+        }
 
         /// <summary>
         /// Gets the full name of this line.
         /// </summary>
-        public string Name { get { return line.szName; } }
+        public string Name {
+            get { return line.szName; }
+        }
 
         /// <summary>
         /// Gets the component type of this line;
         /// </summary>
-        public MixerLineComponentType ComponentType
-        {
-            get
-            {
-                return (MixerLineComponentType)line.dwComponentType;
-            }
+        public MixerLineComponentType ComponentType {
+            get { return (MixerLineComponentType) line.dwComponentType; }
         }
 
         /// <summary>
         /// The mixer that owns this line.
         /// </summary>
-        public Mixer Mixer { get { return mixer; } }
+        public Mixer Mixer {
+            get { return mixer; }
+        }
 
         internal MixerLine findLine(int lineId)
         {
-            if (Id == lineId) { return this; }
-            foreach (MixerLine ml in ChildLines)
-            {
+            if (Id == lineId) {
+                return this;
+            }
+
+            foreach (MixerLine ml in ChildLines) {
                 MixerLine found = ml.findLine(lineId);
                 if (found != null)
                     return found;
             }
+
             return null;
         }
 
         private static readonly IList<MixerLine> EMPTY_LIST =
             new List<MixerLine>().AsReadOnly();
 
-        internal virtual IList<MixerLine> ChildLines
-        {
-            get
-            {
-                return EMPTY_LIST;
-            }
+        internal virtual IList<MixerLine> ChildLines {
+            get { return EMPTY_LIST; }
         }
 
         internal MixerControl findControl(int ctrlId)
         {
-            foreach (MixerControl c in Controls)
-            {
+            foreach (MixerControl c in Controls) {
                 if (c.Id == ctrlId) return c;
             }
-            foreach (MixerLine l in ChildLines)
-            {
+
+            foreach (MixerLine l in ChildLines) {
                 MixerControl found = l.findControl(ctrlId);
                 if (found != null) return found;
             }
+
             return null;
         }
 
@@ -187,8 +185,7 @@ namespace ManagedWinapi.Audio.Mixer
 
         #region PInvoke Declarations
 
-        internal struct MIXERLINE
-        {
+        internal struct MIXERLINE {
             public int cbStruct;
             public int dwDestination;
             public int dwSource;
@@ -200,22 +197,21 @@ namespace ManagedWinapi.Audio.Mixer
             public int cConnections;
             public int cControls;
             [MarshalAs(UnmanagedType.ByValTStr,
-            SizeConst = 16)]
+                SizeConst = 16)]
             public string szShortName;
             [MarshalAs(UnmanagedType.ByValTStr,
-            SizeConst = 64)]
+                SizeConst = 64)]
             public string szName;
             public int dwType;
             public int dwDeviceID;
             public int wMid;
             public int wPid;
             public int vDriverVersion;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
-            public string szPname;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)] public string szPname;
         }
 
         [DllImport("winmm.dll", CharSet = CharSet.Ansi)]
-        internal static extern int mixerGetLineInfoA(IntPtr hmxobj, ref 
+        internal static extern int mixerGetLineInfoA(IntPtr hmxobj, ref
             MIXERLINE pmxl, int fdwInfo);
 
         internal static int MIXER_GETLINEINFOF_DESTINATION = 0;
@@ -229,33 +225,34 @@ namespace ManagedWinapi.Audio.Mixer
     /// each way sound can leave the mixer. Usually there are two destination lines,
     /// one for playback and one for recording.
     /// </summary>
-    public class DestinationLine : MixerLine
-    {
-        private DestinationLine(Mixer mixer, MIXERLINE line) : base(mixer, line) { }
+    public class DestinationLine : MixerLine {
+        private DestinationLine(Mixer mixer, MIXERLINE line) : base(mixer, line)
+        {
+        }
 
         /// <summary>
         /// Gets the number of source lines of this destination line.
         /// </summary>
-        public int SourceLineCount { get { return line.cConnections; } }
+        public int SourceLineCount {
+            get { return line.cConnections; }
+        }
 
         private IList<SourceLine> srcLines = null;
 
         /// <summary>
         /// Gets all source lines of this destination line.
         /// </summary>
-        public IList<SourceLine> SourceLines
-        {
-            get
-            {
-                if (srcLines == null)
-                {
+        public IList<SourceLine> SourceLines {
+            get {
+                if (srcLines == null) {
                     List<SourceLine> sls = new List<SourceLine>(SourceLineCount);
-                    for (int i = 0; i < SourceLineCount; i++)
-                    {
+                    for (int i = 0; i < SourceLineCount; i++) {
                         sls.Add(SourceLine.GetLine(mixer, line.dwDestination, i));
                     }
+
                     srcLines = sls.AsReadOnly();
                 }
+
                 return srcLines;
             }
         }
@@ -276,19 +273,17 @@ namespace ManagedWinapi.Audio.Mixer
 
         private IList<MixerLine> childLines;
 
-        internal override IList<MixerLine> ChildLines
-        {
-            get
-            {
-                if (childLines == null)
-                {
+        internal override IList<MixerLine> ChildLines {
+            get {
+                if (childLines == null) {
                     List<MixerLine> cl = new List<MixerLine>();
-                    foreach (MixerLine ml in SourceLines)
-                    {
+                    foreach (MixerLine ml in SourceLines) {
                         cl.Add(ml);
                     }
+
                     childLines = cl.AsReadOnly();
                 }
+
                 return childLines;
             }
         }
@@ -300,9 +295,10 @@ namespace ManagedWinapi.Audio.Mixer
     /// CD audio, there will be two CD audio source lines, one for the Recording
     /// destination line and one for the Playback destination line.
     /// </summary>
-    public class SourceLine : MixerLine
-    {
-        private SourceLine(Mixer m, MIXERLINE l) : base(m, l) { }
+    public class SourceLine : MixerLine {
+        private SourceLine(Mixer m, MIXERLINE l) : base(m, l)
+        {
+        }
 
         internal static SourceLine GetLine(Mixer mixer, int destIndex, int srcIndex)
         {
@@ -319,8 +315,7 @@ namespace ManagedWinapi.Audio.Mixer
     /// Types of source or destination lines. The descriptions for these
     /// lines have been taken from http://www.borg.com/~jglatt/tech/mixer.htm.
     /// </summary>
-    public enum MixerLineComponentType
-    {
+    public enum MixerLineComponentType {
         /// <summary>
         /// An undefined destination line type.
         /// </summary>

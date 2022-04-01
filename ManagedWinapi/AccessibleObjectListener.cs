@@ -17,19 +17,19 @@
  * http://www.gnu.org/licenses/lgpl.html or write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+
 using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Accessibility;
 
-namespace ManagedWinapi.Accessibility
-{
+
+namespace ManagedWinapi.Accessibility {
     /// <summary>
     /// Listens to events from the Windows accessibility system. These events are useful
     /// if you want to write a screenreader or similar program.
     /// </summary>
-    public class AccessibleEventListener : Component
-    {
+    public class AccessibleEventListener : Component {
         /// <summary>
         /// Occurs when an accessible event is received.
         /// </summary>
@@ -66,14 +66,9 @@ namespace ManagedWinapi.Accessibility
         /// <summary>
         /// Enables this listener so that it reports accessible events.
         /// </summary>
-        public bool Enabled
-        {
-            get
-            {
-                return enabled;
-            }
-            set
-            {
+        public bool Enabled {
+            get { return enabled; }
+            set {
                 enabled = value;
                 updateListener();
             }
@@ -82,50 +77,57 @@ namespace ManagedWinapi.Accessibility
         /// <summary>
         /// The minimal event type to listen to.
         /// </summary>
-        public AccessibleEventType MinimalEventType
-        {
+        public AccessibleEventType MinimalEventType {
             get { return min; }
-            set { min = value; updateListener(); }
+            set {
+                min = value;
+                updateListener();
+            }
         }
 
         /// <summary>
         /// The maximal event type to listen to.
         /// </summary>
-        public AccessibleEventType MaximalEventType
-        {
+        public AccessibleEventType MaximalEventType {
             get { return max; }
-            set { max = value; updateListener(); }
+            set {
+                max = value;
+                updateListener();
+            }
         }
 
         /// <summary>
         /// The Process ID to listen to.
         /// Default 0 listens to all processes.
         /// </summary>
-        public UInt32 ProcessId
-        {
+        public UInt32 ProcessId {
             get { return processId; }
-            set { processId = value; updateListener(); }
+            set {
+                processId = value;
+                updateListener();
+            }
         }
 
         /// <summary>
         /// The Thread ID to listen to.
         /// Default 0 listens to all threads.
         /// </summary> 
-        public UInt32 ThreadId
-        {
+        public UInt32 ThreadId {
             get { return threadId; }
-            set { threadId = value; updateListener(); }
+            set {
+                threadId = value;
+                updateListener();
+            }
         }
 
         private void updateListener()
         {
-            if (handle != IntPtr.Zero)
-            {
+            if (handle != IntPtr.Zero) {
                 UnhookWinEvent(handle);
                 handle = IntPtr.Zero;
             }
-            if (enabled)
-            {
+
+            if (enabled) {
                 handle = SetWinEventHook(min, max, IntPtr.Zero, internalDelegate, processId, threadId, 0);
             }
         }
@@ -136,11 +138,11 @@ namespace ManagedWinapi.Accessibility
         /// <param name="disposing">Whether to dispose managed resources.</param>
         protected override void Dispose(bool disposing)
         {
-            if (enabled)
-            {
+            if (enabled) {
                 enabled = false;
                 updateListener();
             }
+
             gch.Free();
             base.Dispose(disposing);
         }
@@ -160,15 +162,15 @@ namespace ManagedWinapi.Accessibility
             object child;
             uint result = AccessibleObjectFromEvent(e.HWnd, e.ObjectID, e.ChildID, out iacc, out child);
             if (result != 0) throw new Exception("AccessibleObjectFromPoint returned " + result);
-            return new SystemAccessibleObject(iacc, (int)child);
+            return new SystemAccessibleObject(iacc, (int) child);
         }
 
         #region PInvoke Declarations
 
         [DllImport("user32.dll")]
         private static extern IntPtr SetWinEventHook(AccessibleEventType eventMin, AccessibleEventType eventMax, IntPtr
-           hmodWinEventProc, WinEventDelegate lpfnWinEventProc, uint idProcess,
-           uint idThread, uint dwFlags);
+                hmodWinEventProc, WinEventDelegate lpfnWinEventProc, uint idProcess,
+            uint idThread, uint dwFlags);
 
         [DllImport("user32.dll")]
         static extern bool UnhookWinEvent(IntPtr hWinEventHook);
@@ -190,8 +192,7 @@ namespace ManagedWinapi.Accessibility
     /// <summary>
     /// Provides data for accessible events.
     /// </summary>
-    public class AccessibleEventArgs : EventArgs
-    {
+    public class AccessibleEventArgs : EventArgs {
         private AccessibleEventType eventType;
         private IntPtr hWnd;
         private uint idObject;
@@ -216,68 +217,57 @@ namespace ManagedWinapi.Accessibility
         /// <summary>
         /// Type of this accessible event
         /// </summary>
-        public AccessibleEventType EventType
-        {
+        public AccessibleEventType EventType {
             get { return eventType; }
         }
 
         /// <summary>
         /// Handle of the affected window, if any.
         /// </summary>
-        public IntPtr HWnd
-        {
+        public IntPtr HWnd {
             get { return hWnd; }
         }
 
         /// <summary>
         /// Object ID.
         /// </summary>
-        public uint ObjectID
-        {
+        public uint ObjectID {
             get { return idObject; }
         }
 
         /// <summary>
         /// Child ID.
         /// </summary>
-        public uint ChildID
-        {
+        public uint ChildID {
             get { return idChild; }
         }
 
         /// <summary>
         /// The thread that generated this event.
         /// </summary>
-        public uint Thread
-        {
+        public uint Thread {
             get { return dwEventThread; }
         }
 
         /// <summary>
         /// Time in milliseconds when the event was generated.
         /// </summary>
-        public uint Time
-        {
+        public uint Time {
             get { return dwmsEventTime; }
         }
 
         /// <summary>
         /// The accessible object related to this event.
         /// </summary>
-        public SystemAccessibleObject AccessibleObject
-        {
-            get
-            {
-                return AccessibleEventListener.GetAccessibleObject(this);
-            }
+        public SystemAccessibleObject AccessibleObject {
+            get { return AccessibleEventListener.GetAccessibleObject(this); }
         }
     }
 
     /// <summary>
     /// This enumeration lists known accessible event types.
     /// </summary>
-    public enum AccessibleEventType
-    {
+    public enum AccessibleEventType {
         /// <summary>
         ///  Sent when a sound is played.  Currently nothing is generating this, we
         ///  are going to be cleaning up the SOUNDSENTRY feature in the control panel
