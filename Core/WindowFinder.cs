@@ -18,12 +18,9 @@
  * along with Switcheroo.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using Serilog;
 using System.Collections.Generic;
 using System.Linq;
-using Switcheroo.Core;
 using frigo = FrigoTab;
-using System;
 
 namespace Switcheroo.Core
 {
@@ -40,8 +37,6 @@ namespace Switcheroo.Core
                     return a.IsAltTabWindow() && match;
                 }).ToList();
 
-            var lines = String.Join("\n", filtered.Select(x => "title: " + x.Title));
-            Log.Information("lines: {0}", lines);
             return filtered;
         }
     }

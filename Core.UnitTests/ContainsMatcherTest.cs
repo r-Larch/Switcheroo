@@ -104,7 +104,7 @@ namespace Switcheroo.Core.UnitTests
             Assert.That(result.Matched, Is.True);
         }
 
-        private static MatchResult Evaluate(string input, string pattern)
+        private static MatchResult Evaluate(string? input, string? pattern)
         {
             var containsMatcher = new ContainsMatcher();
             return containsMatcher.Evaluate(input, pattern);

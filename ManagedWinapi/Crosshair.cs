@@ -21,13 +21,13 @@ namespace ManagedWinapi
         Cursor myCursor;
 
         /// <summary>
-        /// Occurs when the user finished dragging the crosshair. Use 
+        /// Occurs when the user finished dragging the crosshair. Use
         /// <see cref="Cursor.Position"/> to detect the cursor position.
         /// </summary>
         public event EventHandler CrosshairDragged;
 
         /// <summary>
-        /// Occurs while the user drags the crosshair. Use 
+        /// Occurs while the user drags the crosshair. Use
         /// <see cref="Cursor.Position"/> to detect the cursor position.
         /// </summary>
         public event EventHandler CrosshairDragging;

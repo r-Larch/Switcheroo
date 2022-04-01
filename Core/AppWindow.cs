@@ -27,7 +27,6 @@ using System.Runtime.Caching;
 using System.Runtime.InteropServices;
 using System.Text;
 using ManagedWinapi.Windows;
-using Serilog;
 
 namespace Switcheroo.Core
 {
@@ -99,7 +98,7 @@ namespace Switcheroo.Core
             WinApi.SwitchToThisWindow(lastActiveVisiblePopup, true);
         }
 
-        public AppWindow Owner
+        public new AppWindow Owner
         {
             get
             {

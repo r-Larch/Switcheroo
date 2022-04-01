@@ -3,7 +3,7 @@
  * http://www.switcheroo.io/
  * Copyright 2009, 2010 James Sulak
  * Copyright 2014 Regin Larsen
- * 
+ *
  * Switcheroo is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -13,7 +13,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with Switcheroo.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -60,7 +60,7 @@ namespace Switcheroo.Core
             GetRoot = 2,
 
             /// <summary>
-            /// Retrieves the owned root window by walking the chain of parent and owner windows returned by GetParent. 
+            /// Retrieves the owned root window by walking the chain of parent and owner windows returned by GetParent.
             /// </summary>
             GetRootOwner = 3
         }
@@ -80,12 +80,12 @@ namespace Switcheroo.Core
             CreateThread = 0x0002,
 
             /// <summary>
-            /// 
+            ///
             /// </summary>
             SetSessionId = 0x0004,
 
             /// <summary>
-            /// Required to perform an operation on the address space of a process 
+            /// Required to perform an operation on the address space of a process
             /// </summary>
             VmOperation = 0x0008,
 
@@ -130,7 +130,7 @@ namespace Switcheroo.Core
             SuspendResume = 0x0800,
 
             /// <summary>
-            /// Required to retrieve certain information about a process (see GetExitCodeProcess, GetPriorityClass, IsProcessInJob, QueryFullProcessImageName). 
+            /// Required to retrieve certain information about a process (see GetExitCodeProcess, GetPriorityClass, IsProcessInJob, QueryFullProcessImageName).
             /// A handle that has the PROCESS_QUERY_INFORMATION access right is automatically granted PROCESS_QUERY_LIMITED_INFORMATION.
             /// </summary>
             QueryLimitedInformation = 0x1000,
@@ -146,7 +146,7 @@ namespace Switcheroo.Core
             Delete = 0x00010000,
 
             /// <summary>
-            /// Required to read information in the security descriptor for the object, not including the information in the SACL. 
+            /// Required to read information in the security descriptor for the object, not including the information in the SACL.
             /// To read or write the SACL, you must request the ACCESS_SYSTEM_SECURITY access right. For more information, see SACL Access Right.
             /// </summary>
             ReadControl = 0x00020000,

@@ -3,7 +3,6 @@ using System.Drawing;
 
 namespace FrigoTab {
 
-    [SuppressMessage("ReSharper", "NotAccessedField.Local")]
     public struct Rect {
 
         private readonly Point topLeft;

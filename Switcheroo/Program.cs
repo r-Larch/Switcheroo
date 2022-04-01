@@ -92,7 +92,7 @@ namespace Switcheroo
                 {
                     UseShellExecute = true,
                     WorkingDirectory = Environment.CurrentDirectory,
-                    FileName = Assembly.GetEntryAssembly().CodeBase,
+                    FileName = Assembly.GetEntryAssembly().Location,
                     Verb = "runas"
                 };
 

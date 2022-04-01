@@ -28,6 +28,7 @@ using Switcheroo.Properties;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
@@ -41,7 +42,7 @@ using System.Windows.Interop;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using Application = System.Windows.Application;
-using MenuItem = System.Windows.Forms.MenuItem;
+using ToolStripMenuItem = System.Windows.Forms.ToolStripMenuItem;
 using MessageBox = System.Windows.MessageBox;
 
 namespace Switcheroo
@@ -248,29 +249,33 @@ namespace Switcheroo
         {
             var icon = Properties.Resources.icon;
 
-            var runOnStartupMenuItem = new MenuItem("Run on &Startup", (s, e) => RunOnStartup(s as MenuItem))
+            var runOnStartupMenuItem = new ToolStripMenuItem("Run on &Startup", null, (s, e) => RunOnStartup(s as ToolStripMenuItem))
             {
                 Checked = new AutoStart().IsEnabled
             };
 
-            var sortAZMenuItem = new MenuItem("Alpha&betical Sort", (s, e) => sortAZMenuItem_Click(s as MenuItem));
+            var sortAZMenuItem = new ToolStripMenuItem("Alpha&betical Sort", null, (s, e) => sortAZMenuItem_Click(s as ToolStripMenuItem));
 
-            var exportToJSON_MenuItem = new MenuItem("Export to &Json", (s, e) => exportToJSON_MenuItem_Click(s as MenuItem));
+            var exportToJSON_MenuItem = new ToolStripMenuItem("Export to &Json", null, (s, e) => exportToJSON_MenuItem_Click(s as ToolStripMenuItem));
+
+            var container = new Container();
+            foreach (var item in new[] {
+                         new ToolStripMenuItem("&Options", null, (s, e) => Options()),
+                         runOnStartupMenuItem,
+                         sortAZMenuItem,
+                         exportToJSON_MenuItem,
+                         new ToolStripMenuItem("&About", null, (s, e) => About()),
+                         new ToolStripMenuItem("E&xit", null, (s, e) => Quit())
+                     }) {
+                container.Add(item);
+            }
 
             _notifyIcon = new NotifyIcon
             {
                 Text = "Switcheroo",
                 Icon = icon,
                 Visible = true,
-                ContextMenu = new System.Windows.Forms.ContextMenu(new[]
-                {
-                    new MenuItem("&Options", (s, e) => Options()),
-                    runOnStartupMenuItem,
-                    sortAZMenuItem,
-                    exportToJSON_MenuItem,
-                    new MenuItem("&About", (s, e) => About()),
-                    new MenuItem("E&xit", (s, e) => Quit())
-                })
+                ContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(container),
             };
 
             _notifyIcon.MouseClick += new System.Windows.Forms.MouseEventHandler(NotifyIconMouseClick);
@@ -294,7 +299,7 @@ namespace Switcheroo
             }
         }
 
-        private static void RunOnStartup(MenuItem menuItem)
+        private static void RunOnStartup(ToolStripMenuItem menuItem)
         {
             try
             {
@@ -581,7 +586,7 @@ namespace Switcheroo
         /// <summary>
         /// Toggle alphabetical order program sort
         /// </summary>
-        private void sortAZMenuItem_Click(MenuItem menuItem)
+        private void sortAZMenuItem_Click(ToolStripMenuItem menuItem)
         {
             Toggle_sortWinList();
             menuItem.Checked = _sortWinList;
@@ -590,7 +595,7 @@ namespace Switcheroo
         /// <summary>
         /// Context menu "Export to Json"
         /// </summary>
-        private void exportToJSON_MenuItem_Click(MenuItem menuItem)
+        private void exportToJSON_MenuItem_Click(ToolStripMenuItem menuItem)
         {
             ExportToJSON();
         }
@@ -986,7 +991,7 @@ namespace Switcheroo
 
         void Toggle_MenuItem(String text)
         {
-            foreach (MenuItem mi in _notifyIcon.ContextMenu.MenuItems)
+            foreach (ToolStripMenuItem mi in _notifyIcon.ContextMenuStrip.Container.Components)
             {
                 if ((String)mi.Text == text)
                 {

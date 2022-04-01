@@ -100,7 +100,7 @@ namespace Switcheroo.Core.UnitTests
             Assert.That(result.StringParts[1].Value, Is.EqualTo(" Chrome"));
         }
 
-        private static MatchResult Evaluate(string input, string pattern)
+        private static MatchResult Evaluate(string? input, string? pattern)
         {
             var matcher = new StartsWithMatcher();
             return matcher.Evaluate(input, pattern);

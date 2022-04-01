@@ -80,7 +80,7 @@ namespace Switcheroo.Core.UnitTests
             Assert.That(result.StringParts[2].Value, Is.EqualTo("e"));
         }
 
-        private static MatchResult Evaluate(string input, string pattern)
+        private static MatchResult Evaluate(string? input, string? pattern)
         {
             return new IndividualCharactersMatcher().Evaluate(input, pattern);
         }
