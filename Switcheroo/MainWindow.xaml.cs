@@ -98,7 +98,7 @@ namespace Switcheroo {
 
         private void Toggle_MenuItem(string text)
         {
-            foreach (ToolStripMenuItem mi in _notifyIcon.ContextMenuStrip.Container.Components) {
+            foreach (ToolStripMenuItem mi in _notifyIcon.ContextMenuStrip.Items) {
                 if (mi.Text == text) {
                     mi.Checked = !mi.Checked;
                 }
@@ -240,31 +240,21 @@ namespace Switcheroo {
         {
             var icon = Properties.Resources.icon;
 
-            var runOnStartupMenuItem = new ToolStripMenuItem("Run on &Startup", null, (s, e) => RunOnStartup(s as ToolStripMenuItem)) {
+            var strip = new ContextMenuStrip();
+            strip.Items.Add(new ToolStripMenuItem("&Options", null, (s, e) => Options()));
+            strip.Items.Add(new ToolStripMenuItem("Run on &Startup", null, (s, e) => RunOnStartup(s as ToolStripMenuItem)) {
                 Checked = new AutoStart().IsEnabled
-            };
-
-            var sortAZMenuItem = new ToolStripMenuItem("Alpha&betical Sort", null, (s, e) => sortAZMenuItem_Click(s as ToolStripMenuItem));
-
-            var exportToJSON_MenuItem = new ToolStripMenuItem("Export to &Json", null, (s, e) => exportToJSON_MenuItem_Click(s as ToolStripMenuItem));
-
-            var container = new Container();
-            foreach (var item in new[] {
-                         new ToolStripMenuItem("&Options", null, (s, e) => Options()),
-                         runOnStartupMenuItem,
-                         sortAZMenuItem,
-                         exportToJSON_MenuItem,
-                         new ToolStripMenuItem("&About", null, (s, e) => About()),
-                         new ToolStripMenuItem("E&xit", null, (s, e) => Quit())
-                     }) {
-                container.Add(item);
-            }
+            });
+            strip.Items.Add(new ToolStripMenuItem("Alpha&betical Sort", null, (s, e) => sortAZMenuItem_Click(s as ToolStripMenuItem)));
+            strip.Items.Add(new ToolStripMenuItem("Export to &Json", null, (s, e) => exportToJSON_MenuItem_Click(s as ToolStripMenuItem)));
+            strip.Items.Add(new ToolStripMenuItem("&About", null, (s, e) => About()));
+            strip.Items.Add(new ToolStripMenuItem("E&xit", null, (s, e) => Quit()));
 
             _notifyIcon = new NotifyIcon {
                 Text = "Switcheroo",
                 Icon = icon,
                 Visible = true,
-                ContextMenuStrip = new ContextMenuStrip(container),
+                ContextMenuStrip = strip,
             };
 
             _notifyIcon.MouseClick += NotifyIconMouseClick;
