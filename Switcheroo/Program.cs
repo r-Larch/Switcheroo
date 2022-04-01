@@ -80,7 +80,7 @@ namespace Switcheroo {
                 var proc = new ProcessStartInfo {
                     UseShellExecute = true,
                     WorkingDirectory = Environment.CurrentDirectory,
-                    FileName = Assembly.GetEntryAssembly().Location,
+                    FileName = Assembly.GetEntryAssembly().Location.Replace(".dll", ".exe"),
                     Verb = "runas"
                 };
 
