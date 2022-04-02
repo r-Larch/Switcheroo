@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Core\Switcheroo.Core.csproj" />
+    <ProjectReference Include="..\Switcheroo.Core\Switcheroo.Core.csproj" />
   </ItemGroup>
 
 </Project>

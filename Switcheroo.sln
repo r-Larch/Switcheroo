@@ -5,9 +5,9 @@ VisualStudioVersion = 17.1.32328.378
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Switcheroo", "Switcheroo\Switcheroo.csproj", "{B28E183B-0E38-48A8-8A4E-B4AB7B23CE93}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Switcheroo.Core", "Core\Switcheroo.Core.csproj", "{B846514D-25BE-4274-972A-0E6E74DD0F8B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Switcheroo.Core", "Switcheroo.Core\Switcheroo.Core.csproj", "{B846514D-25BE-4274-972A-0E6E74DD0F8B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Switcheroo.Core.UnitTests", "Core.UnitTests\Switcheroo.Core.UnitTests.csproj", "{CDB9C567-6CFA-4A52-AD14-7DDF82880281}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Switcheroo.Core.UnitTests", "Switcheroo.Core.UnitTests\Switcheroo.Core.UnitTests.csproj", "{CDB9C567-6CFA-4A52-AD14-7DDF82880281}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FrigoTab", "FrigoTab\FrigoTab.csproj", "{7FE3A8DA-2D60-4AD7-BD18-D6A8CC18049E}"
 EndProject
@@ -16,7 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedWinapi.Windows", "SystemWindow\ManagedWinapi.Windows.csproj", "{8BC5CBD6-8E36-48F4-BED0-A222F14D604C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedWinapi.Windows", "ManagedWinapi.Windows\ManagedWinapi.Windows.csproj", "{8BC5CBD6-8E36-48F4-BED0-A222F14D604C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libs", "Libs", "{65EBACF3-CA52-4734-A28D-68389F331F6F}"
 EndProject
