@@ -15,9 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Update="HotKey.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Update="HotKey.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,6 +33,5 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Core\Switcheroo.Core.csproj" />
-    <ProjectReference Include="..\ManagedWinapi\ManagedWinapi.csproj" />
   </ItemGroup>
 </Project>

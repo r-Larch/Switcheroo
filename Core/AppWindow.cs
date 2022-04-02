@@ -29,7 +29,7 @@ using System.Text;
 using ManagedWinapi.Windows;
 
 
-namespace Switcheroo.Core; 
+namespace Switcheroo.Core;
 
 /// <summary>
 ///     This class is a wrapper around the Win32 api window handles
@@ -74,9 +74,9 @@ public class AppWindow : SystemWindow {
         }
     }
 
-    public new static IEnumerable<AppWindow> AllToplevelWindows {
+    public new static IEnumerable<AppWindow> AllTopLevelWindows {
         get {
-            return SystemWindow.AllToplevelWindows
+            return SystemWindow.AllTopLevelWindows
                 .Select(w => new AppWindow(w.HWnd));
         }
     }

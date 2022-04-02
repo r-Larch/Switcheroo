@@ -3,7 +3,7 @@
  * http://www.switcheroo.io/
  * Copyright 2009, 2010 James Sulak
  * Copyright 2014 Regin Larsen
- * 
+ *
  * Switcheroo is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -13,7 +13,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with Switcheroo.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -39,7 +39,7 @@ namespace Switcheroo {
         {
             InitializeComponent();
 
-            // Show what's already selected     
+            // Show what's already selected
             _hotkey = (HotKey) Application.Current.Properties["hotkey"];
 
             try {
@@ -49,7 +49,7 @@ namespace Switcheroo {
             }
 
             _hotkeyViewModel = new HotkeyViewModel {
-                KeyCode = KeyInterop.KeyFromVirtualKey((int) _hotkey.KeyCode),
+                KeyCode = KeyInterop.KeyFromVirtualKey((int) _hotkey.VirtualKeyCode),
                 Alt = _hotkey.Alt,
                 Ctrl = _hotkey.Ctrl,
                 Windows = _hotkey.WindowsKey,
@@ -84,7 +84,7 @@ namespace Switcheroo {
                     _hotkey.Shift = _hotkeyViewModel.Shift;
                     _hotkey.Ctrl = _hotkeyViewModel.Ctrl;
                     _hotkey.WindowsKey = _hotkeyViewModel.Windows;
-                    _hotkey.KeyCode = (Keys) KeyInterop.VirtualKeyFromKey(_hotkeyViewModel.KeyCode);
+                    _hotkey.VirtualKeyCode = KeyInterop.VirtualKeyFromKey(_hotkeyViewModel.KeyCode);
                     _hotkey.Enabled = true;
                 }
 
@@ -118,17 +118,24 @@ namespace Switcheroo {
             var key = (e.Key == Key.System ? e.SystemKey : e.Key);
 
             // Ignore modifier keys
-            if (key == Key.LeftShift || key == Key.RightShift
-                                     || key == Key.LeftCtrl || key == Key.RightCtrl
-                                     || key == Key.LeftAlt || key == Key.RightAlt
-                                     || key == Key.LWin || key == Key.RWin) {
+            if (key is
+                Key.LeftShift or
+                Key.RightShift or
+                Key.LeftCtrl or
+                Key.RightCtrl or
+                Key.LeftAlt or
+                Key.RightAlt or
+                Key.LWin or
+                Key.RWin
+               ) {
                 return;
             }
 
-            var previewHotkeyModel = new HotkeyViewModel();
-            previewHotkeyModel.Ctrl = (Keyboard.Modifiers & ModifierKeys.Control) != 0;
-            previewHotkeyModel.Shift = (Keyboard.Modifiers & ModifierKeys.Shift) != 0;
-            previewHotkeyModel.Alt = (Keyboard.Modifiers & ModifierKeys.Alt) != 0;
+            var previewHotkeyModel = new HotkeyViewModel {
+                Ctrl = (Keyboard.Modifiers & ModifierKeys.Control) != 0,
+                Shift = (Keyboard.Modifiers & ModifierKeys.Shift) != 0,
+                Alt = (Keyboard.Modifiers & ModifierKeys.Alt) != 0
+            };
 
             var winLKey = new KeyboardKey(Keys.LWin);
             var winRKey = new KeyboardKey(Keys.RWin);
@@ -211,8 +218,7 @@ namespace Switcheroo {
                     shortcutText.Append("Win + ");
                 }
 
-                var keyString =
-                    KeyboardHelper.CodeToString((uint) KeyInterop.VirtualKeyFromKey(KeyCode)).ToUpper().Trim();
+                var keyString = KeyboardHelper.CodeToString((uint) KeyInterop.VirtualKeyFromKey(KeyCode)).ToUpper().Trim();
                 if (keyString.Length == 0) {
                     keyString = new KeysConverter().ConvertToString(KeyCode);
                 }

@@ -5,27 +5,26 @@ using Switcheroo.Properties;
 
 namespace Switcheroo {
     public static class Theme {
-        private static SolidColorBrush Background;
-        private static SolidColorBrush Foreground;
-        private static MainWindow mainWindow;
+        private static SolidColorBrush _background;
+        private static SolidColorBrush _foreground;
+        private static MainWindow _mainWindow;
 
-        public static void SuscribeWindow(MainWindow main)
+        public static void SubscribeWindow(MainWindow main)
         {
-            mainWindow = main;
+            _mainWindow = main;
         }
 
         public static void LoadTheme()
         {
-            Mode mode;
-            Enum.TryParse(Settings.Default.Theme, out mode);
+            Enum.TryParse(Settings.Default.Theme, out Mode mode);
             switch (mode) {
                 case Mode.Light:
-                    Background = new SolidColorBrush(Color.FromRgb(248, 248, 248));
-                    Foreground = new SolidColorBrush(Color.FromRgb(0, 0, 0));
+                    _background = new SolidColorBrush(Color.FromRgb(248, 248, 248));
+                    _foreground = new SolidColorBrush(Color.FromRgb(0, 0, 0));
                     break;
                 case Mode.Dark:
-                    Background = new SolidColorBrush(Color.FromRgb(30, 30, 30));
-                    Foreground = new SolidColorBrush(Color.FromRgb(248, 248, 248));
+                    _background = new SolidColorBrush(Color.FromRgb(30, 30, 30));
+                    _foreground = new SolidColorBrush(Color.FromRgb(248, 248, 248));
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
@@ -36,11 +35,15 @@ namespace Switcheroo {
 
         private static void SetUpTheme()
         {
-            mainWindow.Border.Background =
-                mainWindow.tb.Background = mainWindow.lb.Background
-                    = mainWindow.Border.BorderBrush = Background;
+            _mainWindow.Border.Background =
+                _mainWindow.tb.Background =
+                    _mainWindow.lb.Background =
+                        _mainWindow.Border.BorderBrush =
+                            _background;
 
-            mainWindow.tb.Foreground = mainWindow.lb.Foreground = Foreground;
+            _mainWindow.tb.Foreground =
+                _mainWindow.lb.Foreground =
+                    _foreground;
         }
 
         private enum Mode {

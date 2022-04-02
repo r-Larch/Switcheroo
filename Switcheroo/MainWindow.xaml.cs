@@ -26,6 +26,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
@@ -36,6 +37,7 @@ using System.Windows.Interop;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using ManagedWinapi;
+using ManagedWinapi.Hooks;
 using ManagedWinapi.Windows;
 using Newtonsoft.Json;
 using Serilog;
@@ -83,7 +85,7 @@ namespace Switcheroo {
 
             CheckForUpdates();
 
-            Theme.SuscribeWindow(this);
+            Theme.SubscribeWindow(this);
 
             Theme.LoadTheme();
 
@@ -110,11 +112,12 @@ namespace Switcheroo {
             PreviousItem
         }
 
-        /// =================================
+        // =================================
 
         #region Private Methods
 
-        /// =================================
+        // =================================
+
         private void SetUpKeyBindings()
         {
             // Enter and Esc bindings are not executed before the keys have been released.
@@ -133,7 +136,7 @@ namespace Switcheroo {
                     Options();
                 }
                 else if (args.SystemKey == Key.W) {
-                    ExportToJSON();
+                    ExportToJson();
                 }
                 else if (args.SystemKey == Key.Q && Keyboard.Modifiers.HasFlag(ModifierKeys.Alt)) {
                     _altTabAutoSwitch = false;
@@ -324,12 +327,8 @@ namespace Switcheroo {
         private static async Task<Version> GetLatestVersion()
         {
             try {
-                var versionAsString =
-                    await
-                        new WebClient().DownloadStringTaskAsync(
-                            "https://raw.github.com/kvakulo/Switcheroo/update/version.txt");
-                Version newVersion;
-                if (Version.TryParse(versionAsString, out newVersion)) {
+                var versionAsString = await new HttpClient().GetStringAsync("https://raw.github.com/r-Larch/Switcheroo/update/version.txt");
+                if (Version.TryParse(versionAsString, out var newVersion)) {
                     return newVersion;
                 }
             }
@@ -343,7 +342,7 @@ namespace Switcheroo {
         ///     Export JSON of currently running windows.
         ///     JSON Structure: arrays of window titles are grouped under unique process names which are sorted alphabetically.
         /// </summary>
-        private void ExportToJSON()
+        private void ExportToJson()
         {
             _unfilteredWindowList = new WindowFinder().GetWindows().Select(window => new AppWindowViewModel(window)).ToList();
             _unfilteredWindowList = _unfilteredWindowList.OrderBy(x => x.ProcessTitle).ToList();
@@ -545,7 +544,7 @@ namespace Switcheroo {
         /// </summary>
         private void exportToJSON_MenuItem_Click(ToolStripMenuItem menuItem)
         {
-            ExportToJSON();
+            ExportToJson();
         }
 
         #endregion

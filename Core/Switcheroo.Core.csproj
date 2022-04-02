@@ -10,6 +10,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FrigoTab\FrigoTab.csproj" />
-    <ProjectReference Include="..\ManagedWinapi\ManagedWinapi.csproj" />
+    <ProjectReference Include="..\SystemWindow\ManagedWinapi.Windows.csproj" />
   </ItemGroup>
 </Project>

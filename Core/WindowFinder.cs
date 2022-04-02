@@ -28,7 +28,7 @@ namespace Switcheroo.Core {
         public List<AppWindow> GetWindows()
         {
             var appWindows = new frigo.WindowFinder().Windows.ToList();
-            var filtered = AppWindow.AllToplevelWindows
+            var filtered = AppWindow.AllTopLevelWindows
                 .Where(a => {
                     var match = appWindows.Find(h => h.handle == a.HWnd) != frigo.WindowHandle.Null;
                     return a.IsAltTabWindow() && match;

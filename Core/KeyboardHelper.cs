@@ -3,7 +3,7 @@
  * http://www.switcheroo.io/
  * Copyright 2009, 2010 James Sulak
  * Copyright 2014 Regin Larsen
- * 
+ *
  * Switcheroo is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -13,7 +13,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with Switcheroo.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -21,7 +21,6 @@
 using System;
 using System.Diagnostics;
 using System.Text;
-using System.Windows.Forms;
 
 
 namespace Switcheroo.Core {
@@ -30,15 +29,14 @@ namespace Switcheroo.Core {
     public class KeyboardHelper {
         public static string CodeToString(uint virtualKey)
         {
-            uint procId;
-            var thread = WinApi.GetWindowThreadProcessId(Process.GetCurrentProcess().MainWindowHandle, out procId);
+            var thread = WinApi.GetWindowThreadProcessId(Process.GetCurrentProcess().MainWindowHandle, out _);
             var hkl = WinApi.GetKeyboardLayout(thread);
 
             if (hkl == IntPtr.Zero) {
                 return string.Empty;
             }
 
-            var keyStates = new Keys[256];
+            var keyStates = new byte[256];
             if (!WinApi.GetKeyboardState(keyStates)) {
                 return string.Empty;
             }
@@ -46,7 +44,8 @@ namespace Switcheroo.Core {
             var scanCode = WinApi.MapVirtualKeyEx(virtualKey, WinApi.MapVirtualKeyMapTypes.MAPVK_VK_TO_CHAR, hkl);
 
             var sb = new StringBuilder(10);
-            var rc = WinApi.ToUnicodeEx(virtualKey, scanCode, new Keys[0], sb, sb.Capacity, 0, hkl);
+            // ReSharper disable once UseArrayEmptyMethod
+            var rc = WinApi.ToUnicodeEx(virtualKey, scanCode, new byte[0], sb, sb.Capacity, 0, hkl);
             return sb.ToString();
         }
     }

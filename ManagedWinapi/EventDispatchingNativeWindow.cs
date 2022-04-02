@@ -1,8 +1,8 @@
 /*
- * ManagedWinapi - A collection of .NET components that wrap PInvoke calls to 
+ * ManagedWinapi - A collection of .NET components that wrap PInvoke calls to
  * access native API by managed code. http://mwinapi.sourceforge.net/
  * Copyright (C) 2006 Michael Schierl
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; see the file COPYING. if not, visit
  * http://www.gnu.org/licenses/lgpl.html or write to the Free Software
@@ -58,9 +58,7 @@ namespace ManagedWinapi.Windows {
         public static EventDispatchingNativeWindow Instance {
             get {
                 lock (myLock) {
-                    if (_instance == null)
-                        _instance = new EventDispatchingNativeWindow();
-                    return _instance;
+                    return _instance ??= new EventDispatchingNativeWindow();
                 }
             }
         }
@@ -68,7 +66,7 @@ namespace ManagedWinapi.Windows {
         /// <summary>
         ///     Attach your event handlers here.
         /// </summary>
-        public event WndProcEventHandler EventHandler;
+        public event WndProcEventHandler? EventHandler;
 
         /// <summary>
         ///     Parse messages passed to this window and send them to the event handlers.
@@ -80,8 +78,7 @@ namespace ManagedWinapi.Windows {
         protected override void WndProc(ref Message m)
         {
             var handled = false;
-            if (EventHandler != null)
-                EventHandler(ref m, ref handled);
+            EventHandler?.Invoke(ref m, ref handled);
             if (!handled)
                 base.WndProc(ref m);
         }

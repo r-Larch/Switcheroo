@@ -175,8 +175,7 @@ namespace ManagedWinapi.Hooks {
         #region PInvoke Declarations
 
         [DllImport("user32.dll", SetLastError = true)]
-        private static extern IntPtr SetWindowsHookEx(HookType hook, IntPtr callback,
-            IntPtr hMod, uint dwThreadId);
+        private static extern IntPtr SetWindowsHookEx(HookType hook, IntPtr callback, IntPtr hMod, uint dwThreadId);
 
         [DllImport("user32.dll", SetLastError = true)]
         internal static extern bool UnhookWindowsHookEx(IntPtr hhk);
