@@ -41,7 +41,7 @@ public class AltTabHook : IDisposable {
             return;
         }
 
-        if (!IsKeyDown(Keys.Alt)) {
+        if (!IsAltKeyDown(keyboardMessage)) {
             return;
         }
 
@@ -63,6 +63,13 @@ public class AltTabHook : IDisposable {
     {
         return keyboardMessage.VirtualKeyCode == (int) Keys.Tab &&
                (keyboardMessage.Message == WM_KEYDOWN || keyboardMessage.Message == WM_SYSKEYDOWN);
+    }
+
+    private static bool IsAltKeyDown(LowLevelKeyboardMessage keyboardMessage)
+    {
+        // https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-kbdllhookstruct
+        // 0x20: the 6. bit - The context code. The value is 1 if the ALT key is pressed; otherwise, it is 0.
+        return (keyboardMessage.Flags & 0x20) == 0x20;
     }
 
     private AltTabHookEventArgs OnPressed(bool shiftDown, bool ctrlDown)

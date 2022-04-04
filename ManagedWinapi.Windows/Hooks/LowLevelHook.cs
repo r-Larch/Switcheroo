@@ -43,13 +43,12 @@ public class LowLevelKeyboardHook : Hook {
     // ReSharper disable IdentifierTypo
     [StructLayout(LayoutKind.Sequential)]
     private readonly struct KBDLLHOOKSTRUCT {
-        public readonly IntPtr dwExtraInfo;
-        public readonly int flags;
-        public readonly int scanCode;
-        public readonly int time;
         public readonly int vkCode;
+        public readonly int scanCode;
+        public readonly int flags;
+        public readonly int time;
+        public readonly IntPtr dwExtraInfo;
     }
-
     #endregion
 }
 

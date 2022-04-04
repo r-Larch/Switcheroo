@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 
@@ -53,8 +54,12 @@ public class Hook : IDisposable {
         if (Hooked) return;
         var func = Marshal.GetFunctionPointerForDelegate(_managedDelegate);
         if (_global) {
-            // http://stackoverflow.com/a/17898148/198065
-            var moduleHandle = LoadLibrary("user32.dll");
+            //// http://stackoverflow.com/a/17898148/198065
+            //var moduleHandle = LoadLibrary("user32.dll");
+
+            var currentModule = Process.GetCurrentProcess().MainModule!;
+            var moduleHandle = GetModuleHandle(currentModule.ModuleName!);
+
             _hHook = SetWindowsHookEx(Type, func, moduleHandle, 0);
         }
         else {
@@ -138,6 +143,9 @@ public class Hook : IDisposable {
 
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool FreeLibrary(IntPtr hModule);
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+    private static extern IntPtr GetModuleHandle(string name);
 
     private delegate int HookProc(int code, IntPtr wParam, IntPtr lParam);
 
