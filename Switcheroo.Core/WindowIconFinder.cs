@@ -30,7 +30,7 @@ namespace Switcheroo.Core {
     }
 
     public class WindowIconFinder {
-        public Icon Find(AppWindow window, WindowIconSize size)
+        public Icon Find(AppWindow1 window, WindowIconSize size)
         {
             Icon icon = null;
             try {

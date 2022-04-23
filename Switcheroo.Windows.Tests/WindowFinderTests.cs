@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.Versioning;
 using Xunit;
 using Xunit.Abstractions;
@@ -22,11 +20,11 @@ public class WindowFinderTests {
     [Fact]
     public void Test1()
     {
-        IReadOnlyCollection<HWnd> windows = Array.Empty<HWnd>();
+        IReadOnlyCollection<AppWindow> windows = null!;
         var windowFinder = new WindowFinder();
 
         var sw = new Stopwatch();
-        for (int i = 0; i < 40; i++) {
+        for (var i = 0; i < 40; i++) {
             sw.Restart();
 
             windows = windowFinder.GetWindows();

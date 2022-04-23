@@ -2,7 +2,6 @@
 using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.RegularExpressions;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -13,9 +12,9 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Switcheroo.Windows;
 
-public struct Window : IEquatable<Window> {
+public struct AppWindow : IEquatable<AppWindow> {
     public HWnd HWnd { get; }
-    public Window(HWnd hWnd) => HWnd = hWnd;
+    public AppWindow(HWnd hWnd) => HWnd = hWnd;
     private string? _className = null;
 
 
@@ -36,10 +35,10 @@ public struct Window : IEquatable<Window> {
     }
 
 
-    public Window Owner {
+    public AppWindow Owner {
         get {
             var hwnd = PInvoke.GetWindow(HWnd, GET_WINDOW_CMD.GW_OWNER);
-            return new Window(hwnd);
+            return new AppWindow(hwnd);
         }
     }
 
@@ -203,17 +202,17 @@ public struct Window : IEquatable<Window> {
     }
 
 
-    private unsafe IReadOnlyCollection<Window> DirectChildWindows()
+    private unsafe IReadOnlyCollection<AppWindow> DirectChildWindows()
     {
-        var context = (list: new List<Window>(), hWnd: HWnd);
+        var context = (list: new List<AppWindow>(), hWnd: HWnd);
         PInvoke.EnumChildWindows(HWnd, &LpEnumFunc, (nint) Unsafe.AsPointer(ref context));
         return context.list;
 
         [UnmanagedCallersOnly]
         static BOOL LpEnumFunc(HWnd hwnd, nint lParam)
         {
-            var (list, hWnd) = Unsafe.Read<(List<Window> List, HWnd HWnd)>((void*) lParam);
-            if (PInvoke.GetParent(hwnd) == hWnd) list.Add(new Window(hwnd));
+            var (list, hWnd) = Unsafe.Read<(List<AppWindow> List, HWnd HWnd)>((void*) lParam);
+            if (PInvoke.GetParent(hwnd) == hWnd) list.Add(new AppWindow(hwnd));
             return true;
         }
     }
@@ -289,13 +288,13 @@ public struct Window : IEquatable<Window> {
 
     #region Equality
 
-    public bool Equals(Window other) => HWnd.Equals(other.HWnd);
-    public override bool Equals(object? obj) => obj is Window other && Equals(other);
+    public bool Equals(AppWindow other) => HWnd.Equals(other.HWnd);
+    public override bool Equals(object? obj) => obj is AppWindow other && Equals(other);
     public override int GetHashCode() => HWnd.GetHashCode();
-    public static implicit operator HWnd(Window window) => window.HWnd;
-    public static implicit operator nint(Window window) => window.HWnd;
-    public static bool operator ==(Window h1, Window h2) => h1.HWnd == h2.HWnd;
-    public static bool operator !=(Window h1, Window h2) => h1.HWnd != h2.HWnd;
+    public static implicit operator HWnd(AppWindow appWindow) => appWindow.HWnd;
+    public static implicit operator nint(AppWindow appWindow) => appWindow.HWnd;
+    public static bool operator ==(AppWindow h1, AppWindow h2) => h1.HWnd == h2.HWnd;
+    public static bool operator !=(AppWindow h1, AppWindow h2) => h1.HWnd != h2.HWnd;
     public override string ToString() => $"Window({HWnd})".ToString();
 
     #endregion

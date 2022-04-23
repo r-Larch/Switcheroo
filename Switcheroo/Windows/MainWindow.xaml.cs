@@ -634,7 +634,6 @@ namespace Switcheroo {
             // the keyboard input.
             // http://www.codeproject.com/Tips/76427/How-to-bring-window-to-top-with-SetForegroundWindo
 
-            var thisWindowHandle = new WindowInteropHelper(this).Handle;
 
             var altKey = new KeyboardKey(Keys.Alt);
             var altKeyPressed = false;
@@ -647,7 +646,7 @@ namespace Switcheroo {
 
             // Bring the Switcheroo window to the foreground
             Show();
-            _windowFinder.SetForegroundWindow(thisWindowHandle);
+            _windowFinder.SetForegroundWindow(new WindowInteropHelper(this).Handle);
             Activate();
 
             // Release the Alt key if it was pressed above

@@ -8,17 +8,17 @@ using Windows.Win32.Foundation;
 namespace Switcheroo.Windows;
 
 public class WindowFinder {
-    public Window ForegroundWindow;
-    public bool IsWindowsNativeTaskSwitcherActive => ForegroundWindow.ClassName == "MultitaskingViewFrame";
-    public bool IsForegroundWindow(Window hWnd) => hWnd == ForegroundWindow || ForegroundWindow.ProcessId == hWnd.ProcessId;
-    public void SaveForegroundWindow() => ForegroundWindow = new Window(GetForegroundWindow());
+    public AppWindow ForegroundAppWindow;
+    public bool IsWindowsNativeTaskSwitcherActive => ForegroundAppWindow.ClassName == "MultitaskingViewFrame";
+    public bool IsForegroundWindow(AppWindow hWnd) => hWnd == ForegroundAppWindow || ForegroundAppWindow.ProcessId == hWnd.ProcessId;
+    public void SaveForegroundWindow() => ForegroundAppWindow = new AppWindow(GetForegroundWindow());
 
     public void SetForegroundWindow(HWnd hWnd)
     {
-        if (!PInvoke.SetForegroundWindow(hWnd)) throw new Win32Exception(Marshal.GetLastWin32Error());
+        if (PInvoke.SetForegroundWindow(hWnd) == false) throw new Win32Exception(Marshal.GetLastWin32Error());
     }
 
-    public unsafe IReadOnlyCollection<Window> GetWindows()
+    public unsafe IReadOnlyCollection<AppWindow> GetWindows()
     {
         var windows = new WindowCollection();
         PInvoke.EnumWindows(&LpEnumFunc, (nint) Unsafe.AsPointer(ref windows));
@@ -27,7 +27,7 @@ public class WindowFinder {
         [UnmanagedCallersOnly]
         static BOOL LpEnumFunc(HWnd hwnd, nint lParam)
         {
-            var window = new Window(hwnd);
+            var window = new AppWindow(hwnd);
             if (IsAltTapWindow(window)) {
                 Unsafe.Read<WindowCollection>((void*) lParam).Add(window);
             }
@@ -41,13 +41,13 @@ public class WindowFinder {
 
     private static HWnd GetForegroundWindow() => PInvoke.GetForegroundWindow();
 
-    private static bool IsAltTapWindow(Window window)
+    private static bool IsAltTapWindow(AppWindow appWindow)
     {
-        if (window.IsCloaked) {
+        if (appWindow.IsCloaked) {
             return false;
         }
 
-        var style = window.WindowStyles;
+        var style = appWindow.WindowStyles;
 
         var isDisabled = (style & WindowStyles.WS_DISABLED) == WindowStyles.WS_DISABLED;
         var isVisible = (style & WindowStyles.WS_VISIBLE) == WindowStyles.WS_VISIBLE;
@@ -56,7 +56,7 @@ public class WindowFinder {
             return false;
         }
 
-        var exStyle = window.WindowExStyles;
+        var exStyle = appWindow.WindowExStyles;
 
         var isNoActivate = (exStyle & WindowStylesEx.WS_EX_NOACTIVATE) == WindowStylesEx.WS_EX_NOACTIVATE;
         var isAppWindow = (exStyle & WindowStylesEx.WS_EX_APPWINDOW) == WindowStylesEx.WS_EX_APPWINDOW;
@@ -70,29 +70,29 @@ public class WindowFinder {
             return false;
         }
 
-        if (!window.Visible) return false;
-        if (string.IsNullOrEmpty(window.Title)) return false;
+        if (!appWindow.Visible) return false;
+        if (string.IsNullOrEmpty(appWindow.Title)) return false;
 
         if (
             !isAppWindow &&
             !isToolWindow &&
             (
                 isNoActivate ||
-                !IsOwnerOrOwnerNotVisible(window) ||
-                IsSlackNotification(window) ||
-                window.IsCoreWindow()
+                !IsOwnerOrOwnerNotVisible(appWindow) ||
+                IsSlackNotification(appWindow) ||
+                appWindow.IsCoreWindow()
             )
         ) return false;
 
         if (
-            window.IsUwpApplication() &&
-            !HasApplicationViewCloakTypeRunning(window)
+            appWindow.IsUwpApplication() &&
+            !HasApplicationViewCloakTypeRunning(appWindow)
         ) return false;
 
         return true;
     }
 
-    private static bool IsOwnerOrOwnerNotVisible(Window hwnd)
+    private static bool IsOwnerOrOwnerNotVisible(AppWindow hwnd)
     {
         var owner = hwnd.Owner;
         return owner.HWnd == 0 || !(owner.Visible && owner.Enabled);

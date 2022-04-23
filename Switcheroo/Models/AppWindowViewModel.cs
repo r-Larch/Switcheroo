@@ -13,15 +13,15 @@ using WindowFinder = Switcheroo.Windows.WindowFinder;
 
 namespace Switcheroo {
     public class AppWindowViewModel : INotifyPropertyChanged, IWindowText {
-        public AppWindowViewModel(Window appWindow, WindowFinder windowFinder)
+        public AppWindowViewModel(AppWindow appAppWindow, WindowFinder windowFinder)
         {
-            AppWindow = appWindow;
-            IsForegroundWindow = windowFinder.IsForegroundWindow(appWindow);
+            AppAppWindow = appAppWindow;
+            IsForegroundWindow = windowFinder.IsForegroundWindow(appAppWindow);
             FormattedTitle = new XamlHighlighter().Highlight(new[] { new StringPart(WindowTitle) });
             FormattedProcessTitle = new XamlHighlighter().Highlight(new[] { new StringPart(ProcessTitle) });
         }
 
-        private Window AppWindow { get; }
+        private AppWindow AppAppWindow { get; }
 
 
         public bool IsForegroundWindow { get; }
@@ -29,12 +29,12 @@ namespace Switcheroo {
 
         #region Actions
 
-        public void SwitchToThisWindow() => AppWindow.SwitchToLastVisibleActivePopup();
+        public void SwitchToThisWindow() => AppAppWindow.SwitchToLastVisibleActivePopup();
 
         public void RunDuplicateProcess()
         {
             try {
-                var cmd = AppWindow.ExecutablePath;
+                var cmd = AppAppWindow.ExecutablePath;
                 Process.Start(cmd);
             }
             catch (Win32Exception ex) {
@@ -47,15 +47,15 @@ namespace Switcheroo {
         public async Task<bool> TryCloseAsync(CancellationToken token)
         {
             IsBeingClosed = true;
-            AppWindow.Close();
+            AppAppWindow.Close();
 
             var checkInterval = TimeSpan.FromMilliseconds(125);
 
-            while (!token.IsCancellationRequested && !AppWindow.IsClosedOrHidden) {
+            while (!token.IsCancellationRequested && !AppAppWindow.IsClosedOrHidden) {
                 await Task.Delay(checkInterval, token).ConfigureAwait(false);
             }
 
-            return AppWindow.IsClosedOrHidden;
+            return AppAppWindow.IsClosedOrHidden;
         }
 
         #endregion
@@ -63,13 +63,13 @@ namespace Switcheroo {
 
         #region IWindowText Members
 
-        public string WindowTitle => AppWindow.Title;
+        public string WindowTitle => AppAppWindow.Title;
 
         public string ProcessTitle {
             get {
-                var key = $"ProcessTitle-{AppWindow}";
+                var key = $"ProcessTitle-{AppAppWindow}";
                 if (MemoryCache.Default.Get(key) is not string processTitle) {
-                    processTitle = AppWindow.ProcessTitle;
+                    processTitle = AppAppWindow.ProcessTitle;
                     MemoryCache.Default.Add(key, processTitle, DateTimeOffset.Now.AddHours(1));
                 }
 
@@ -82,7 +82,7 @@ namespace Switcheroo {
 
         #region Bindable properties
 
-        public IntPtr HWnd => AppWindow.HWnd;
+        public IntPtr HWnd => AppAppWindow.HWnd;
 
         private string _formattedTitle;
 

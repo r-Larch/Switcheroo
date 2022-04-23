@@ -10,14 +10,27 @@ namespace Windows.Win32;
 
 internal static partial class PInvoke {
     [DllImport("User32", ExactSpelling = true, EntryPoint = "GetWindowLongW", SetLastError = true)]
-    private static extern int GetWindowLong_x86(nint hWnd, WINDOW_LONG_PTR_INDEX nIndex);
+    private static extern int GetWindowLong_x86(HWnd hWnd, WINDOW_LONG_PTR_INDEX nIndex);
 
     [DllImport("User32", ExactSpelling = true, EntryPoint = "GetWindowLongPtrW", SetLastError = true)]
-    private static extern nint GetWindowLongPtrImpl_x64(nint hWnd, WINDOW_LONG_PTR_INDEX nIndex);
+    private static extern nint GetWindowLongPtrImpl_x64(HWnd hWnd, WINDOW_LONG_PTR_INDEX nIndex);
 
-    public static unsafe nint GetWindowLongPtr(nint hWnd, WINDOW_LONG_PTR_INDEX nIndex)
+    public static unsafe nint GetWindowLongPtr(HWnd hWnd, WINDOW_LONG_PTR_INDEX nIndex)
     {
         return sizeof(nint) == 4 ? GetWindowLong_x86(hWnd, nIndex) : GetWindowLongPtrImpl_x64(hWnd, nIndex);
+    }
+}
+
+internal static partial class PInvoke {
+    [DllImport("User32", ExactSpelling = true, EntryPoint = "GetClassLongW", SetLastError = true)]
+    private static extern int GetClassLong_x86(HWnd hWnd, WNDCLASSEXA_INDEX nIndex);
+
+    [DllImport("User32", ExactSpelling = true, EntryPoint = "GetClassLongPtrW", SetLastError = true)]
+    private static extern nint GetClassLongPtrImpl_x64(HWnd hWnd, WNDCLASSEXA_INDEX nIndex);
+
+    public static unsafe nint GetClassLongPtr(HWnd hWnd, WNDCLASSEXA_INDEX nIndex)
+    {
+        return sizeof(nint) == 4 ? GetClassLong_x86(hWnd, nIndex) : GetClassLongPtrImpl_x64(hWnd, nIndex);
     }
 }
 
@@ -390,4 +403,41 @@ internal static partial class PInvoke {
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [SupportedOSPlatform("windows5.0")]
     internal static extern BOOL SetForegroundWindow(HWnd hWnd);
+
+    /// <summary>Sends the specified message to one or more windows.</summary>
+    /// <param name="hWnd">
+    /// <para>Type: <b>HWND</b> A handle to the window whose window procedure will receive the message. If this parameter is <b>HWND_BROADCAST</b> ((HWND)0xffff), the message is sent to all top-level windows in the system, including disabled or invisible unowned windows. The function does not return until each window has timed out. Therefore, the total wait time can be up to the value of <i>uTimeout</i> multiplied by the number of top-level windows.</para>
+    /// <para><see href="https://docs.microsoft.com/windows/win32/api//winuser/nf-winuser-sendmessagetimeoutw#parameters">Read more on docs.microsoft.com</see>.</para>
+    /// </param>
+    /// <param name="Msg">
+    /// <para>Type: <b>UINT</b> The message to be sent. For lists of the system-provided messages, see <a href="https://docs.microsoft.com/windows/desktop/winmsg/about-messages-and-message-queues">System-Defined Messages</a>.</para>
+    /// <para><see href="https://docs.microsoft.com/windows/win32/api//winuser/nf-winuser-sendmessagetimeoutw#parameters">Read more on docs.microsoft.com</see>.</para>
+    /// </param>
+    /// <param name="wParam">
+    /// <para>Type: <b>WPARAM</b> Any additional message-specific information.</para>
+    /// <para><see href="https://docs.microsoft.com/windows/win32/api//winuser/nf-winuser-sendmessagetimeoutw#parameters">Read more on docs.microsoft.com</see>.</para>
+    /// </param>
+    /// <param name="lParam">
+    /// <para>Type: <b>LPARAM</b> Any additional message-specific information.</para>
+    /// <para><see href="https://docs.microsoft.com/windows/win32/api//winuser/nf-winuser-sendmessagetimeoutw#parameters">Read more on docs.microsoft.com</see>.</para>
+    /// </param>
+    /// <param name="fuFlags">Type: <b>UINT</b></param>
+    /// <param name="uTimeout">
+    /// <para>Type: <b>UINT</b> The duration of the time-out period, in milliseconds. If the message is a broadcast message, each window can use the full time-out period. For example, if you specify a five second time-out period and there are three top-level windows that fail to process the message, you could have up to a 15 second delay.</para>
+    /// <para><see href="https://docs.microsoft.com/windows/win32/api//winuser/nf-winuser-sendmessagetimeoutw#parameters">Read more on docs.microsoft.com</see>.</para>
+    /// </param>
+    /// <param name="lpdwResult">
+    /// <para>Type: <b>PDWORD_PTR</b> The result of the message processing. The value of this parameter depends on the message that is specified.</para>
+    /// <para><see href="https://docs.microsoft.com/windows/win32/api//winuser/nf-winuser-sendmessagetimeoutw#parameters">Read more on docs.microsoft.com</see>.</para>
+    /// </param>
+    /// <returns>
+    /// <para>Type: <b>LRESULT</b> If the function succeeds, the return value is nonzero. <b>SendMessageTimeout</b> does not provide information about individual windows timing out if <b>HWND_BROADCAST</b> is used. If the function fails or times out, the return value is 0. To get extended error information, call <a href="/windows/desktop/api/errhandlingapi/nf-errhandlingapi-getlasterror">GetLastError</a>. If <b>GetLastError</b> returns <b>ERROR_TIMEOUT</b>, then the function timed out. <b>Windows 2000:  </b>If <a href="/windows/desktop/api/errhandlingapi/nf-errhandlingapi-getlasterror">GetLastError</a> returns 0, then the function timed out.</para>
+    /// </returns>
+    /// <remarks>
+    /// <para><see href="https://docs.microsoft.com/windows/win32/api//winuser/nf-winuser-sendmessagetimeoutw">Learn more about this API from docs.microsoft.com</see>.</para>
+    /// </remarks>
+    [DllImport("User32", ExactSpelling = true, EntryPoint = "SendMessageTimeoutW", SetLastError = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    [SupportedOSPlatform("windows5.0")]
+    internal static extern unsafe LRESULT SendMessageTimeout(HWnd hWnd, uint Msg, WPARAM wParam, LPARAM lParam, SEND_MESSAGE_TIMEOUT_FLAGS fuFlags, uint uTimeout, [Optional] nuint* lpdwResult);
 }

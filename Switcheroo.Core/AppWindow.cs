@@ -34,8 +34,8 @@ namespace Switcheroo.Core;
 /// <summary>
 ///     This class is a wrapper around the Win32 api window handles
 /// </summary>
-public class AppWindow : SystemWindow {
-    public AppWindow(IntPtr HWnd) : base(HWnd)
+public class AppWindow1 : SystemWindow {
+    public AppWindow1(IntPtr HWnd) : base(HWnd)
     {
     }
 
@@ -68,18 +68,18 @@ public class AppWindow : SystemWindow {
 
     public string ExecutablePath => GetExecutablePath(Process.Id);
 
-    public new AppWindow Owner {
+    public new AppWindow1 Owner {
         get {
             var ownerHandle = WinApi.GetWindow(HWnd, WinApi.GetWindowCmd.GW_OWNER);
             if (ownerHandle == IntPtr.Zero) return null;
-            return new AppWindow(ownerHandle);
+            return new AppWindow1(ownerHandle);
         }
     }
 
-    public new static IEnumerable<AppWindow> AllTopLevelWindows {
+    public new static IEnumerable<AppWindow1> AllTopLevelWindows {
         get {
             return SystemWindow.AllTopLevelWindows
-                .Select(w => new AppWindow(w.HWnd));
+                .Select(w => new AppWindow1(w.HWnd));
         }
     }
 
