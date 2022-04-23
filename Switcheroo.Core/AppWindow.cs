@@ -39,6 +39,8 @@ public class AppWindow : SystemWindow {
     {
     }
 
+    public bool IsForegroundWindow { get; set; }
+
     public string ProcessTitle {
         get {
             var key = "ProcessTitle-" + HWnd;
@@ -98,24 +100,28 @@ public class AppWindow : SystemWindow {
 
     public bool IsAltTabWindow()
     {
-        if (!Visible) return false;
-        if (!HasWindowTitle()) return false;
-        if (IsAppWindow()) return true;
-        // if (IsToolWindow()) return false;
-        if (IsToolWindow()) return true;
-        if (IsNoActivate()) return false;
-        if (!IsOwnerOrOwnerNotVisible()) return false;
-        if (HasITaskListDeletedProperty()) return false;
-        if (IsCoreWindow()) return false;
-        if (IsApplicationFrameWindow() && !HasAppropriateApplicationViewCloakType()) return false;
+        if (
+            Visible &&
+            !string.IsNullOrEmpty(Title) &&
+            (
+                IsAppWindow() ||
+                IsToolWindow() ||
+                (
+                    !IsNoActivate() &&
+                    IsOwnerOrOwnerNotVisible() &&
+                    !HasITaskListDeletedProperty() &&
+                    !IsCoreWindow()
+                )
+            ) &&
+            (
+                !IsApplicationFrameWindow() ||
+                HasAppropriateApplicationViewCloakType()
+            )
+        ) return true;
 
-        return true;
+        return false;
     }
 
-    private bool HasWindowTitle()
-    {
-        return !string.IsNullOrEmpty(Title);
-    }
 
     private bool IsToolWindow()
     {

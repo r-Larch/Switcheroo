@@ -1,7 +1,5 @@
 using System;
-using System.Drawing;
 using System.Runtime.InteropServices;
-using System.Text;
 
 
 namespace FrigoTab {
@@ -21,78 +19,19 @@ namespace FrigoTab {
         NoActivate = 0x8000000
     }
 
-    public struct WindowHandle {
+    public readonly struct WindowHandle {
         public static readonly WindowHandle Null = new WindowHandle(IntPtr.Zero);
-        public static bool operator ==(WindowHandle h1, WindowHandle h2) => h1.handle == h2.handle;
-        public static bool operator !=(WindowHandle h1, WindowHandle h2) => h1.handle != h2.handle;
+        public static bool operator ==(WindowHandle h1, WindowHandle h2) => h1.Handle == h2.Handle;
+        public static bool operator !=(WindowHandle h1, WindowHandle h2) => h1.Handle != h2.Handle;
 
-        [DllImport("user32.dll")]
-        public static extern WindowHandle GetForegroundWindow();
+        public readonly IntPtr Handle;
 
-        public readonly IntPtr handle;
-
-        public WindowHandle(IntPtr handle) => this.handle = handle;
-        public override bool Equals(object obj) => obj != null && GetType() == obj.GetType() && handle == ((WindowHandle) obj).handle;
-        public override int GetHashCode() => handle.GetHashCode();
+        public WindowHandle(IntPtr handle) => Handle = handle;
+        public override bool Equals(object obj) => obj != null && GetType() == obj.GetType() && Handle == ((WindowHandle) obj).Handle;
+        public override int GetHashCode() => Handle.GetHashCode();
         public WindowStyles GetWindowStyles() => (WindowStyles) GetWindowLongPtr(this, WindowLong.Style);
         public WindowExStyles GetWindowExStyles() => (WindowExStyles) GetWindowLongPtr(this, WindowLong.ExStyle);
-        public void PostMessage(WindowMessages msg, int wParam, int lParam) => PostMessage(this, msg, (IntPtr) wParam, (IntPtr) lParam);
 
-        public void SetForeground()
-        {
-            if (GetWindowStyles().HasFlag(WindowStyles.Minimize)) {
-                ShowWindow(this, ShowWindowCommand.Restore);
-            }
-
-            keybd_event(0, 0, 0, 0);
-            SetForegroundWindow(this);
-        }
-
-        public string GetWindowText()
-        {
-            var text = new StringBuilder(GetWindowTextLength(this) + 1);
-            GetWindowText(this, text, text.Capacity);
-            return text.ToString();
-        }
-
-        public Rect GetRect()
-        {
-            var placement = GetWindowPlacement();
-            switch (placement.ShowCmd) {
-                case ShowWindowCommand.ShowNormal:
-                case ShowWindowCommand.ShowMinimized:
-                    return placement.NormalPosition;
-                case ShowWindowCommand.ShowMaximized:
-                    GetWindowRect(this, out var rect);
-                    return rect;
-                default:
-                    throw new ArgumentException();
-            }
-        }
-
-        private WindowPlacement GetWindowPlacement()
-        {
-            var placement = new WindowPlacement();
-            placement.Length = Marshal.SizeOf(placement);
-            GetWindowPlacement(this, ref placement);
-            return placement;
-        }
-
-        private struct WindowPlacement {
-            public int Length;
-            public int Flags;
-            public ShowWindowCommand ShowCmd;
-            public Point MinPosition;
-            public Point MaxPosition;
-            public Rect NormalPosition;
-        }
-
-        private enum ShowWindowCommand {
-            ShowNormal = 1,
-            ShowMinimized = 2,
-            ShowMaximized = 3,
-            Restore = 9
-        }
 
         private enum WindowLong {
             ExStyle = -20,
@@ -100,30 +39,6 @@ namespace FrigoTab {
         }
 
         [DllImport("user32.dll")]
-        private static extern int GetWindowTextLength(WindowHandle hWnd);
-
-        [DllImport("user32.dll")]
-        private static extern int GetWindowText(WindowHandle hWnd, StringBuilder lpString, int nMaxCount);
-
-        [DllImport("user32.dll")]
         private static extern IntPtr GetWindowLongPtr(WindowHandle hWnd, WindowLong nIndex);
-
-        [DllImport("user32.dll")]
-        private static extern bool ShowWindow(WindowHandle hWnd, ShowWindowCommand nCmdShow);
-
-        [DllImport("user32.dll")]
-        private static extern bool SetForegroundWindow(WindowHandle hWnd);
-
-        [DllImport("user32.dll")]
-        private static extern void keybd_event(byte bVk, byte bScan, int dwFlags, int dwExtraInfo);
-
-        [DllImport("user32.dll")]
-        private static extern bool PostMessage(WindowHandle hWnd, WindowMessages msg, IntPtr wParam, IntPtr lParam);
-
-        [DllImport("user32.dll")]
-        private static extern bool GetWindowRect(WindowHandle hWnd, out Rect rect);
-
-        [DllImport("user32.dll")]
-        private static extern bool GetWindowPlacement(WindowHandle hWnd, ref WindowPlacement lpwndpl);
     }
 }

@@ -3,7 +3,7 @@
  * http://www.switcheroo.io/
  * Copyright 2009, 2010 James Sulak
  * Copyright 2014 Regin Larsen
- * 
+ *
  * Switcheroo is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -13,7 +13,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with Switcheroo.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -34,10 +34,9 @@ namespace Switcheroo {
 
         private void HandleRequestNavigate(object sender, RoutedEventArgs e)
         {
-            var hyperlink = e.OriginalSource as Hyperlink;
-            if (hyperlink == null) return;
+            if (e.OriginalSource is not Hyperlink hyperlink) return;
 
-            var navigateUri = hyperlink.NavigateUri.ToString();
+            var navigateUri = hyperlink.NavigateUri.ToString(); // TODO fix me 😢
             Process.Start(new ProcessStartInfo(navigateUri));
             e.Handled = true;
         }

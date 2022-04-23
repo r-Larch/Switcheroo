@@ -20,21 +20,40 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using ManagedWinapi.Windows;
 using frigo = FrigoTab;
 
 
 namespace Switcheroo.Core {
     public class WindowFinder {
+        private SystemWindow _foregroundWindow;
+
+        public bool IsWindowsNativeTaskSwitcherActive => _foregroundWindow.ClassName == "MultitaskingViewFrame";
+
         public List<AppWindow> GetWindows()
         {
             var appWindows = new frigo.WindowFinder().Windows.ToList();
             var filtered = AppWindow.AllTopLevelWindows
                 .Where(a => {
-                    var match = appWindows.Find(h => h.handle == a.HWnd) != frigo.WindowHandle.Null;
+                    var match = appWindows.Find(h => h.Handle == a.HWnd) != frigo.WindowHandle.Null;
                     return a.IsAltTabWindow() && match;
                 }).ToList();
 
+            foreach (var appWindow in filtered) {
+                appWindow.IsForegroundWindow = IsForegroundWindow(appWindow);
+            }
+
             return filtered;
+        }
+
+        public void SaveForegroundWindow()
+        {
+            _foregroundWindow = SystemWindow.ForegroundWindow;
+        }
+
+        private bool IsForegroundWindow(SystemWindow appWindow)
+        {
+            return _foregroundWindow.HWnd == appWindow.HWnd || _foregroundWindow.Process.Id == appWindow.Process.Id;
         }
     }
 }

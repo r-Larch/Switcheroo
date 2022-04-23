@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
 
 
 namespace FrigoTab {
     public class WindowFinder {
-        public readonly IList<WindowHandle> ToolWindows = new List<WindowHandle>();
         public readonly IList<WindowHandle> Windows = new List<WindowHandle>();
 
         public WindowFinder()
@@ -17,18 +15,7 @@ namespace FrigoTab {
         private bool EnumWindowCallback(WindowHandle handle, IntPtr lParam)
         {
             var wndType = GetWindowType(handle);
-            switch (wndType) {
-                case WindowType.AppWindow:
-                    Windows.Add(handle);
-                    break;
-                case WindowType.ToolWindow:
-                    ToolWindows.Add(handle);
-                    break;
-                case WindowType.Hidden:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            if (wndType == WindowType.AppWindow) Windows.Add(handle);
 
             return true;
         }
@@ -75,7 +62,6 @@ namespace FrigoTab {
                 return WindowType.ToolWindow;
             }
 
-            // return IsAltTabWindow(handle) ? WindowType.AppWindow : WindowType.Hidden;
             return WindowType.AppWindow;
         }
 
@@ -85,52 +71,8 @@ namespace FrigoTab {
             return cloaked;
         }
 
-        private static bool IsAltTabWindow(WindowHandle hwnd)
-        {
-            var lastActivePop = GetLastActiveVisiblePopup(hwnd);
-            return lastActivePop == hwnd;
-        }
-
-        private static WindowHandle GetLastActiveVisiblePopup(WindowHandle root)
-        {
-            var hwndWalk = WindowHandle.Null;
-            var hwndTry = root;
-            while (hwndWalk != hwndTry) {
-                hwndWalk = hwndTry;
-                hwndTry = GetLastActivePopup(hwndWalk);
-                if (IsWindowVisible(hwndTry)) {
-                    return hwndTry;
-                }
-            }
-
-            return WindowHandle.Null;
-        }
-
-        public static string GetWindowTitle(IntPtr hWnd)
-        {
-            var length = GetWindowTextLength(hWnd) + 1;
-            var title = new StringBuilder(length);
-            GetWindowText(hWnd, title, length);
-            return title.ToString();
-        }
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
-
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        private static extern int GetWindowTextLength(IntPtr hWnd);
-
         [DllImport("user32.dll")]
         private static extern bool EnumWindows(EnumWindowsProc enumFunc, IntPtr lParam);
-
-        [DllImport("user32.dll")]
-        private static extern WindowHandle GetAncestor(WindowHandle hWnd, int gaFlags);
-
-        [DllImport("user32.dll")]
-        private static extern WindowHandle GetLastActivePopup(WindowHandle hWnd);
-
-        [DllImport("user32.dll")]
-        private static extern bool IsWindowVisible(WindowHandle hWnd);
 
         [DllImport("dwmapi.dll")]
         private static extern int DwmGetWindowAttribute(WindowHandle hWnd, WindowAttribute dwAttribute, out int pvAttribute, int cbAttribute);

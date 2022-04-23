@@ -57,7 +57,7 @@ namespace Switcheroo {
                     }
 
 #if PORTABLE
-                        MakePortable(Settings.Default);
+                    MakePortable(Settings.Default);
 #endif
 
                     MigrateUserSettings();

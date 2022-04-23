@@ -3,7 +3,7 @@
  * http://www.switcheroo.io/
  * Copyright 2009, 2010 James Sulak
  * Copyright 2014 Regin Larsen
- * 
+ *
  * Switcheroo is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -13,7 +13,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with Switcheroo.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -31,23 +31,21 @@ namespace Switcheroo {
     // From https://github.com/crdx/PortableSettingsProvider
     // MIT License
     public sealed class PortableSettingsProvider : SettingsProvider, IApplicationSettingsProvider {
-        private const string _rootNodeName = "settings";
-        private const string _localSettingsNodeName = "localSettings";
-        private const string _globalSettingsNodeName = "globalSettings";
-        private const string _className = "PortableSettingsProvider";
+        private const string RootNodeName = "settings";
+        private const string LocalSettingsNodeName = "localSettings";
+        private const string GlobalSettingsNodeName = "globalSettings";
+        private const string ClassName = "PortableSettingsProvider";
         private XmlDocument _xmlDocument;
 
-        private string _filePath =>
-            Path.Combine(Path.GetDirectoryName(Application.ExecutablePath),
-                string.Format("{0}.settings", ApplicationName));
+        private string FilePath => Path.Combine(Path.GetDirectoryName(Application.ExecutablePath)!, $"{ApplicationName}.settings");
 
-        private XmlNode _localSettingsNode {
+        private XmlNode LocalSettingsNode {
             get {
-                var settingsNode = GetSettingsNode(_localSettingsNodeName);
+                var settingsNode = GetSettingsNode(LocalSettingsNodeName);
                 var machineNode = settingsNode.SelectSingleNode(Environment.MachineName.ToLowerInvariant());
 
                 if (machineNode == null) {
-                    machineNode = _rootDocument.CreateElement(Environment.MachineName.ToLowerInvariant());
+                    machineNode = RootDocument.CreateElement(Environment.MachineName.ToLowerInvariant());
                     settingsNode.AppendChild(machineNode);
                 }
 
@@ -55,22 +53,24 @@ namespace Switcheroo {
             }
         }
 
-        private XmlNode _globalSettingsNode => GetSettingsNode(_globalSettingsNodeName);
+        private XmlNode GlobalSettingsNode => GetSettingsNode(GlobalSettingsNodeName);
 
-        private XmlNode _rootNode => _rootDocument.SelectSingleNode(_rootNodeName);
+        private XmlNode RootNode => RootDocument.SelectSingleNode(RootNodeName);
 
-        private XmlDocument _rootDocument {
+        private XmlDocument RootDocument {
             get {
                 if (_xmlDocument == null) {
+                    _xmlDocument = new XmlDocument();
                     try {
-                        _xmlDocument = new XmlDocument();
-                        _xmlDocument.Load(_filePath);
+                        _xmlDocument.Load(FilePath);
                     }
                     catch (Exception) {
+                        // Ignore
                     }
 
-                    if (_xmlDocument.SelectSingleNode(_rootNodeName) != null)
+                    if (_xmlDocument.SelectSingleNode(RootNodeName) != null) {
                         return _xmlDocument;
+                    }
 
                     _xmlDocument = GetBlankXmlDocument();
                 }
@@ -84,14 +84,14 @@ namespace Switcheroo {
             set { }
         }
 
-        public override string Name => _className;
+        public override string Name => ClassName;
 
         public void Reset(SettingsContext context)
         {
-            _localSettingsNode.RemoveAll();
-            _globalSettingsNode.RemoveAll();
+            LocalSettingsNode.RemoveAll();
+            GlobalSettingsNode.RemoveAll();
 
-            _xmlDocument.Save(_filePath);
+            _xmlDocument.Save(FilePath);
         }
 
         public SettingsPropertyValue GetPreviousVersion(SettingsContext context, SettingsProperty property)
@@ -115,20 +115,19 @@ namespace Switcheroo {
                 SetValue(propertyValue);
 
             try {
-                _rootDocument.Save(_filePath);
+                RootDocument.Save(FilePath);
             }
             catch (Exception) {
-                /* 
-                 * If this is a portable application and the device has been 
-                 * removed then this will fail, so don't do anything. It's 
-                 * probably better for the application to stop saving settings 
+                /*
+                 * If this is a portable application and the device has been
+                 * removed then this will fail, so don't do anything. It's
+                 * probably better for the application to stop saving settings
                  * rather than just crashing outright. Probably.
                  */
             }
         }
 
-        public override SettingsPropertyValueCollection GetPropertyValues(SettingsContext context,
-            SettingsPropertyCollection collection)
+        public override SettingsPropertyValueCollection GetPropertyValues(SettingsContext context, SettingsPropertyCollection collection)
         {
             var values = new SettingsPropertyValueCollection();
 
@@ -144,17 +143,17 @@ namespace Switcheroo {
         private void SetValue(SettingsPropertyValue propertyValue)
         {
             var targetNode = IsGlobal(propertyValue.Property)
-                ? _globalSettingsNode
-                : _localSettingsNode;
+                ? GlobalSettingsNode
+                : LocalSettingsNode;
 
-            var settingNode = targetNode.SelectSingleNode(string.Format("setting[@name='{0}']", propertyValue.Name));
+            var settingNode = targetNode.SelectSingleNode($"setting[@name='{propertyValue.Name}']");
 
             if (settingNode != null)
                 settingNode.InnerText = propertyValue.SerializedValue.ToString();
             else {
-                settingNode = _rootDocument.CreateElement("setting");
+                settingNode = RootDocument.CreateElement("setting");
 
-                var nameAttribute = _rootDocument.CreateAttribute("name");
+                var nameAttribute = RootDocument.CreateAttribute("name");
                 nameAttribute.Value = propertyValue.Name;
 
                 settingNode.Attributes.Append(nameAttribute);
@@ -166,8 +165,8 @@ namespace Switcheroo {
 
         private string GetValue(SettingsProperty property)
         {
-            var targetNode = IsGlobal(property) ? _globalSettingsNode : _localSettingsNode;
-            var settingNode = targetNode.SelectSingleNode(string.Format("setting[@name='{0}']", property.Name));
+            var targetNode = IsGlobal(property) ? GlobalSettingsNode : LocalSettingsNode;
+            var settingNode = targetNode.SelectSingleNode($"setting[@name='{property.Name}']");
 
             if (settingNode == null)
                 return property.DefaultValue != null ? property.DefaultValue.ToString() : string.Empty;
@@ -187,11 +186,11 @@ namespace Switcheroo {
 
         private XmlNode GetSettingsNode(string name)
         {
-            var settingsNode = _rootNode.SelectSingleNode(name);
+            var settingsNode = RootNode.SelectSingleNode(name);
 
             if (settingsNode == null) {
-                settingsNode = _rootDocument.CreateElement(name);
-                _rootNode.AppendChild(settingsNode);
+                settingsNode = RootDocument.CreateElement(name);
+                RootNode.AppendChild(settingsNode);
             }
 
             return settingsNode;
@@ -201,7 +200,7 @@ namespace Switcheroo {
         {
             var blankXmlDocument = new XmlDocument();
             blankXmlDocument.AppendChild(blankXmlDocument.CreateXmlDeclaration("1.0", "utf-8", string.Empty));
-            blankXmlDocument.AppendChild(blankXmlDocument.CreateElement(_rootNodeName));
+            blankXmlDocument.AppendChild(blankXmlDocument.CreateElement(RootNodeName));
 
             return blankXmlDocument;
         }

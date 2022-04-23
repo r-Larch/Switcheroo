@@ -1,0 +1,13 @@
+﻿EnumWindows
+DwmGetWindowAttribute
+GetWindowLong
+IsWindowVisible
+GetWindowTextLength
+GetWindowText
+SetWindowText
+GetWindow
+IsWindowEnabled
+EnableWindow
+GetProp
+GetClassName
+EnumPropsEx

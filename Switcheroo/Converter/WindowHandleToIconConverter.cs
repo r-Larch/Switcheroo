@@ -39,11 +39,11 @@ namespace Switcheroo {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var handle = (IntPtr) value;
-            var key = "IconImage-" + handle;
-            var shortCacheKey = key + "-shortCache";
-            var longCacheKey = key + "-longCache";
-            var iconImage = MemoryCache.Default.Get(shortCacheKey) as BitmapImage;
-            if (iconImage == null) {
+            var key = $"IconImage-{handle}";
+            var shortCacheKey = $"{key}-shortCache";
+            var longCacheKey = $"{key}-longCache";
+
+            if (MemoryCache.Default.Get(shortCacheKey) is not BitmapImage iconImage) {
                 var window = new AppWindow(handle);
                 var icon = ShouldUseSmallTaskbarIcons() ? window.SmallWindowIcon : window.LargeWindowIcon;
                 iconImage = _iconToBitmapConverter.Convert(icon) ?? new BitmapImage();
@@ -61,27 +61,19 @@ namespace Switcheroo {
 
         private static bool ShouldUseSmallTaskbarIcons()
         {
-            var cacheKey = "SmallTaskbarIcons";
+            const string cacheKey = "SmallTaskbarIcons";
 
-            var cachedSetting = MemoryCache.Default.Get(cacheKey) as bool?;
-            if (cachedSetting != null) {
-                return cachedSetting.Value;
+            if (MemoryCache.Default.Get(cacheKey) is bool cachedSetting) {
+                return cachedSetting;
             }
 
-            using (
-                var registryKey =
-                Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced")) {
-                if (registryKey == null) {
-                    return false;
-                }
-
-                var value = registryKey.GetValue("TaskbarSmallIcons");
+            using (var registryKey = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced")) {
+                var value = registryKey?.GetValue("TaskbarSmallIcons");
                 if (value == null) {
                     return false;
                 }
 
-                int intValue;
-                int.TryParse(value.ToString(), out intValue);
+                _ = int.TryParse(value.ToString(), out var intValue);
                 var smallTaskbarIcons = intValue == 1;
                 MemoryCache.Default.Set(cacheKey, smallTaskbarIcons, DateTimeOffset.Now.AddMinutes(120));
                 return smallTaskbarIcons;

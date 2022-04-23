@@ -23,25 +23,27 @@ using System.Linq;
 using Switcheroo.Core.Matchers;
 
 
+#nullable enable
+
 namespace Switcheroo.Core {
     public class WindowFilterer {
-        public IEnumerable<FilterResult<T>> Filter<T>(WindowFilterContext<T> context, string query) where T : IWindowText
+        public IEnumerable<FilterResult<T>> Filter<T>(IReadOnlyCollection<T> windows, string query) where T : IWindowText
         {
             var filterText = query;
-            string processFilterText = null;
+            string? processFilterText = null;
 
             var queryParts = query.Split(new[] { '.' }, 2);
 
             if (queryParts.Length == 2) {
                 processFilterText = queryParts[0];
                 if (processFilterText.Length == 0) {
-                    processFilterText = context.ForegroundWindowProcessTitle;
+                    processFilterText = windows.FirstOrDefault(_ => _.IsForegroundWindow)?.ProcessTitle;
                 }
 
                 filterText = queryParts[1];
             }
 
-            return context.Windows
+            return windows
                 .Select(
                     w =>
                         new {
@@ -82,10 +84,5 @@ namespace Switcheroo.Core {
 
             return results;
         }
-    }
-
-    public class WindowFilterContext<T> where T : IWindowText {
-        public string ForegroundWindowProcessTitle { get; set; }
-        public IEnumerable<T> Windows { get; set; }
     }
 }
