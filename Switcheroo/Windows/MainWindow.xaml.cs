@@ -44,6 +44,7 @@ using Serilog;
 using Switcheroo.Core;
 using Switcheroo.Core.Matchers;
 using Switcheroo.Properties;
+using Switcheroo.Windows;
 using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
 using MouseEventArgs = System.Windows.Forms.MouseEventArgs;
@@ -344,12 +345,12 @@ namespace Switcheroo {
         /// </summary>
         private void ExportToJson()
         {
-            _unfilteredWindowList = _windowFinder.GetWindows().Select(window => new AppWindowViewModel(window)).ToList();
+            _unfilteredWindowList = _windowFinder.GetWindows().Select(window => new AppWindowViewModel(window, _windowFinder)).ToList();
             _unfilteredWindowList = _unfilteredWindowList.OrderBy(x => x.ProcessTitle).ToList();
 
             var winsDict = _unfilteredWindowList.GroupBy(x => x.ProcessTitle).ToDictionary(x => x.Key, x => x.Select(y => y.WindowTitle));
 
-            var JSON_output = JsonConvert.SerializeObject(winsDict);
+            var JSON_output = JsonConvert.SerializeObject(winsDict, Formatting.Indented);
 
             var SaveFileDialog1 = new SaveFileDialog();
             SaveFileDialog1.Title = "Save list to";
@@ -369,7 +370,7 @@ namespace Switcheroo {
         /// </summary>
         private void LoadData(InitialFocus focus)
         {
-            _unfilteredWindowList = _windowFinder.GetWindows().Select(window => new AppWindowViewModel(window)).ToList();
+            _unfilteredWindowList = _windowFinder.GetWindows().Select(window => new AppWindowViewModel(window, _windowFinder)).ToList();
 
             var firstWindow = _unfilteredWindowList.FirstOrDefault();
 
@@ -634,7 +635,6 @@ namespace Switcheroo {
             // http://www.codeproject.com/Tips/76427/How-to-bring-window-to-top-with-SetForegroundWindo
 
             var thisWindowHandle = new WindowInteropHelper(this).Handle;
-            var thisWindow = new AppWindow(thisWindowHandle);
 
             var altKey = new KeyboardKey(Keys.Alt);
             var altKeyPressed = false;
@@ -647,7 +647,7 @@ namespace Switcheroo {
 
             // Bring the Switcheroo window to the foreground
             Show();
-            SystemWindow.ForegroundWindow = thisWindow;
+            _windowFinder.SetForegroundWindow(thisWindowHandle);
             Activate();
 
             // Release the Alt key if it was pressed above

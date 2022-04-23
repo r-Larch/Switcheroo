@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Versioning;
@@ -20,12 +22,17 @@ public class WindowFinderTests {
     [Fact]
     public void Test1()
     {
+        IReadOnlyCollection<HWnd> windows = Array.Empty<HWnd>();
+        var windowFinder = new WindowFinder();
+
         var sw = new Stopwatch();
-        sw.Start();
+        for (int i = 0; i < 40; i++) {
+            sw.Restart();
 
-        var windows = new WindowFinder2().GetWindows().ToList();
+            windows = windowFinder.GetWindows();
 
-        Output.WriteLine($"Time: {sw.Elapsed:g}");
+            Output.WriteLine($"Time: {sw.Elapsed.TotalMilliseconds}");
+        }
 
         foreach (var window in windows) {
             Output.WriteLine($"{window.Title}");

@@ -33,5 +33,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Switcheroo.Core\Switcheroo.Core.csproj" />
+    <ProjectReference Include="..\Switcheroo.Windows\Switcheroo.Windows.csproj" />
   </ItemGroup>
 </Project>

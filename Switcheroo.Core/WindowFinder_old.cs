@@ -25,7 +25,7 @@ using frigo = FrigoTab;
 
 
 namespace Switcheroo.Core {
-    public class WindowFinder {
+    public class WindowFinder_old {
         private SystemWindow _foregroundWindow;
 
         public bool IsWindowsNativeTaskSwitcherActive => _foregroundWindow.ClassName == "MultitaskingViewFrame";

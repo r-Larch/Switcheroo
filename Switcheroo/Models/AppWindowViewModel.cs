@@ -2,25 +2,29 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq.Expressions;
+using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
 using Switcheroo.Core;
 using Switcheroo.Core.Matchers;
+using Switcheroo.Windows;
+using WindowFinder = Switcheroo.Windows.WindowFinder;
 
 
 namespace Switcheroo {
     public class AppWindowViewModel : INotifyPropertyChanged, IWindowText {
-        public AppWindowViewModel(AppWindow appWindow)
+        public AppWindowViewModel(Window appWindow, WindowFinder windowFinder)
         {
             AppWindow = appWindow;
+            IsForegroundWindow = windowFinder.IsForegroundWindow(appWindow);
             FormattedTitle = new XamlHighlighter().Highlight(new[] { new StringPart(WindowTitle) });
             FormattedProcessTitle = new XamlHighlighter().Highlight(new[] { new StringPart(ProcessTitle) });
         }
 
-        private AppWindow AppWindow { get; }
+        private Window AppWindow { get; }
 
 
-        public bool IsForegroundWindow => AppWindow.IsForegroundWindow;
+        public bool IsForegroundWindow { get; }
 
 
         #region Actions
@@ -61,7 +65,17 @@ namespace Switcheroo {
 
         public string WindowTitle => AppWindow.Title;
 
-        public string ProcessTitle => AppWindow.ProcessTitle;
+        public string ProcessTitle {
+            get {
+                var key = $"ProcessTitle-{AppWindow}";
+                if (MemoryCache.Default.Get(key) is not string processTitle) {
+                    processTitle = AppWindow.ProcessTitle;
+                    MemoryCache.Default.Add(key, processTitle, DateTimeOffset.Now.AddHours(1));
+                }
+
+                return processTitle;
+            }
+        }
 
         #endregion
 

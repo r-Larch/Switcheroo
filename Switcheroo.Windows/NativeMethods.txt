@@ -8,6 +8,14 @@ SetWindowText
 GetWindow
 IsWindowEnabled
 EnableWindow
-GetProp
 GetClassName
-EnumPropsEx
+GetWindowThreadProcessId
+SendMessage
+SwitchToThisWindow
+GetAncestor
+GetLastActivePopup
+OpenProcess
+QueryFullProcessImageName
+CloseHandle
+SetForegroundWindow
+SendMessageTimeout

@@ -48,7 +48,7 @@ public class AppWindow : SystemWindow {
             if (processTitle == null) {
                 if (IsApplicationFrameWindow()) {
                     processTitle = "UWP";
-                    var underlyingProcessWindow = AllChildWindows.Where(w => w.ProcessId != ProcessId).FirstOrDefault();
+                    var underlyingProcessWindow = AllChildWindows.FirstOrDefault(w => w.ProcessId != ProcessId);
                     if (underlyingProcessWindow != null && underlyingProcessWindow.ProcessName != "") processTitle = underlyingProcessWindow.ProcessName;
                 }
                 else {

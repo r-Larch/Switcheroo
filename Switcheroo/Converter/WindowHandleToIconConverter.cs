@@ -24,7 +24,7 @@ using System.Runtime.Caching;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
-using Switcheroo.Core;
+using Switcheroo.Windows;
 
 
 namespace Switcheroo {
@@ -44,7 +44,7 @@ namespace Switcheroo {
             var longCacheKey = $"{key}-longCache";
 
             if (MemoryCache.Default.Get(shortCacheKey) is not BitmapImage iconImage) {
-                var window = new AppWindow(handle);
+                var window = new Window(handle);
                 var icon = ShouldUseSmallTaskbarIcons() ? window.SmallWindowIcon : window.LargeWindowIcon;
                 iconImage = _iconToBitmapConverter.Convert(icon) ?? new BitmapImage();
                 MemoryCache.Default.Set(shortCacheKey, iconImage, DateTimeOffset.Now.AddSeconds(5));
