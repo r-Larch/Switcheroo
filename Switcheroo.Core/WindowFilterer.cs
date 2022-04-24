@@ -20,6 +20,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Caching;
 using Switcheroo.Core.Matchers;
 
 
@@ -69,6 +70,23 @@ namespace Switcheroo.Core {
         }
 
         private static List<MatchResult> Score(string title, string filterText)
+        {
+            var key = $"{title}¤{filterText}";
+            ObjectCache cache = MemoryCache.Default;
+
+            if (cache[key] is List<MatchResult> score) {
+                return score; // Cache hit
+            }
+
+            // Cache miss, calculate and store in cache
+            score = ScoreCacheMiss(title, filterText);
+
+            cache[key] = score;
+
+            return score;
+        }
+
+        private static List<MatchResult> ScoreCacheMiss(string title, string filterText)
         {
             var startsWithMatcher = new StartsWithMatcher();
             var containsMatcher = new ContainsMatcher();

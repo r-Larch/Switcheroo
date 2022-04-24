@@ -2,7 +2,7 @@
 
 
 namespace Switcheroo.Core.Matchers {
-    public class IndividualCharactersMatcher : IMatcher {
+    public struct IndividualCharactersMatcher : IMatcher {
         public MatchResult Evaluate(string input, string pattern)
         {
             if (input == null || pattern == null) {
@@ -37,11 +37,10 @@ namespace Switcheroo.Core.Matchers {
             char? previousChar = null;
             foreach (var p in pattern) {
                 if (previousChar != null) {
-                    regexPattern += string.Format("([^{0}]*?)({1})", Regex.Escape(previousChar + ""),
-                        Regex.Escape(p + ""));
+                    regexPattern += $"([^{Regex.Escape(previousChar + "")}]*?)({Regex.Escape(p + "")})";
                 }
                 else {
-                    regexPattern += string.Format("(.*?)({0})", Regex.Escape(p + ""));
+                    regexPattern += $"(.*?)({Regex.Escape(p + "")})";
                 }
 
                 previousChar = p;

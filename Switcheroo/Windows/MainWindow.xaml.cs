@@ -31,6 +31,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Interop;
@@ -392,7 +393,8 @@ namespace Switcheroo {
 
             var itemsCountToHighlight = Math.Min(_unfilteredWindowList.Count, 10);
             for (var i = 0; i < itemsCountToHighlight; i++) {
-                _unfilteredWindowList[i].FormattedTitle = new XamlHighlighter().Highlight(new[] { new StringPart($"{i + 1} ", true) }) + _unfilteredWindowList[i].FormattedTitle;
+                var titleParts = new[] { new StringPart($"{i + 1} ", true), new StringPart(_unfilteredWindowList[i].WindowTitle) };
+                _unfilteredWindowList[i].FormattedTitle = new XamlHighlighter().Highlight(titleParts).ToList();
             }
 
             if (_sortWinList) {
@@ -677,10 +679,10 @@ namespace Switcheroo {
             }
         }
 
-        private static string GetFormattedTitleFromBestResult(IList<MatchResult> matchResults)
+        private static List<Inline> GetFormattedTitleFromBestResult(IList<MatchResult> matchResults)
         {
             var bestResult = matchResults.FirstOrDefault(r => r.Matched) ?? matchResults.First();
-            return new XamlHighlighter().Highlight(bestResult.StringParts);
+            return new XamlHighlighter().Highlight(bestResult.StringParts).ToList();
         }
 
         private void OnEnterPressed(object sender, ExecutedRoutedEventArgs e)

@@ -2,7 +2,7 @@
 
 
 namespace Switcheroo.Core.Matchers {
-    public class ContainsMatcher : IMatcher {
+    public struct ContainsMatcher : IMatcher {
         public MatchResult Evaluate(string input, string pattern)
         {
             if (input == null || pattern == null) {

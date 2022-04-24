@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 using Switcheroo.Core;
 using Switcheroo.Core.Matchers;
 using Switcheroo.Windows;
@@ -17,8 +20,8 @@ namespace Switcheroo {
         {
             AppAppWindow = appAppWindow;
             IsForegroundWindow = windowFinder.IsForegroundWindow(appAppWindow);
-            FormattedTitle = new XamlHighlighter().Highlight(new[] { new StringPart(WindowTitle) });
-            FormattedProcessTitle = new XamlHighlighter().Highlight(new[] { new StringPart(ProcessTitle) });
+            FormattedTitle = new XamlHighlighter().Highlight(new[] { new StringPart(WindowTitle) }).ToList();
+            FormattedProcessTitle = new XamlHighlighter().Highlight(new[] { new StringPart(ProcessTitle) }).ToList();
         }
 
         private AppWindow AppAppWindow { get; }
@@ -84,9 +87,9 @@ namespace Switcheroo {
 
         public IntPtr HWnd => AppAppWindow.HWnd;
 
-        private string _formattedTitle;
+        private List<Inline> _formattedTitle;
 
-        public string FormattedTitle {
+        public List<Inline> FormattedTitle {
             get => _formattedTitle;
             set {
                 _formattedTitle = value;
@@ -94,9 +97,9 @@ namespace Switcheroo {
             }
         }
 
-        private string _formattedProcessTitle;
+        private List<Inline> _formattedProcessTitle;
 
-        public string FormattedProcessTitle {
+        public List<Inline> FormattedProcessTitle {
             get => _formattedProcessTitle;
             set {
                 _formattedProcessTitle = value;
