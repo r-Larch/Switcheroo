@@ -32,6 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ManagedWinapi.Windows\ManagedWinapi.Windows.csproj" />
     <ProjectReference Include="..\Switcheroo.Core\Switcheroo.Core.csproj" />
     <ProjectReference Include="..\Switcheroo.Windows\Switcheroo.Windows.csproj" />
   </ItemGroup>

@@ -7,8 +7,4 @@
   <ItemGroup>
     <PackageReference Include="System.Runtime.Caching" Version="6.0.0" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\ManagedWinapi.Windows\ManagedWinapi.Windows.csproj" />
-  </ItemGroup>
 </Project>
