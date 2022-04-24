@@ -23,7 +23,6 @@ using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
 using ManagedWinapi;
-using Switcheroo.Core;
 using Switcheroo.Properties;
 using Switcheroo.Windows;
 using Application = System.Windows.Application;

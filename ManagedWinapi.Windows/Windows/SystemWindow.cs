@@ -273,16 +273,6 @@ public class SystemWindow {
     }
 
     /// <summary>
-    ///     The process which created this window.
-    /// </summary>
-    public Process Process {
-        get {
-            GetWindowThreadProcessId(HWnd, out var pid);
-            return Process.GetProcessById(pid);
-        }
-    }
-
-    /// <summary>
     ///     The ID of the process which created this window.
     /// </summary>
     public int ProcessId {

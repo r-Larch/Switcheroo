@@ -413,11 +413,6 @@ namespace Switcheroo {
             ScrollSelectedItemIntoView();
         }
 
-        private static bool AreWindowsRelated(SystemWindow window1, SystemWindow window2)
-        {
-            return window1.HWnd == window2.HWnd || window1.Process.Id == window2.Process.Id;
-        }
-
         private void FocusItemInList(InitialFocus focus, bool foregroundWindowMovedToBottom)
         {
             if (focus == InitialFocus.PreviousItem) {
