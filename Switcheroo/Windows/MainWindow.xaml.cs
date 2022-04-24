@@ -92,6 +92,10 @@ namespace Switcheroo {
             Theme.LoadTheme();
 
             Opacity = 0;
+
+            // init window for faster start on first hotkey press
+            Show();
+            Hide();
         }
 
         private void Toggle_sortWinList()
