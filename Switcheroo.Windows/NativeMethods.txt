@@ -19,3 +19,8 @@ QueryFullProcessImageName
 CloseHandle
 SetForegroundWindow
 SendMessageTimeout
+GetWindowThreadProcessId
+GetKeyboardLayout
+GetKeyboardState
+MapVirtualKeyEx
+ToUnicodeEx

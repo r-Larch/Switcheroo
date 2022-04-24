@@ -25,6 +25,7 @@ using System.Windows.Input;
 using ManagedWinapi;
 using Switcheroo.Core;
 using Switcheroo.Properties;
+using Switcheroo.Windows;
 using Application = System.Windows.Application;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
